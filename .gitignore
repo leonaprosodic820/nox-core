@@ -1,0 +1,7 @@
+# Everything excluded by default — only whitelist public files
+*
+!.gitignore
+!README.md
+!LICENSE
+!assets/
+!assets/**
