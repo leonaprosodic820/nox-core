@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Website
+    url: https://www.nox-core.com
+    about: Visit our website for documentation and support
+  - name: Email Support
+    url: mailto:contact@nox-core.com
+    about: Contact us directly for urgent issues
