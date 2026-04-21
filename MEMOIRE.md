@@ -37,4 +37,4 @@
 ## Notes
 
 - Pas de secrets dans ce fichier (tokens, mots de passe).
-- Pour versionner ce fichier : assouplir `~/.gitignore` si besoin.
+- **Versionné dans git** : exception `!MEMOIRE.md` dans `~/.gitignore`.
