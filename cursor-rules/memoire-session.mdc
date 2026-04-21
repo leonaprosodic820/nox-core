@@ -1,0 +1,22 @@
+---
+description: Lire et tenir à jour MEMOIRE.md au début de chaque session
+alwaysApply: true
+---
+
+# Mémoire de projet (`MEMOIRE.md`)
+
+## Au début de chaque session (premier message ou tâche)
+
+1. **Ouvrir et lire** le fichier `MEMOIRE.md` à la racine du workspace (`~/MEMOIRE.md` si le workspace est le home).
+2. Tenir compte du **contexte stable**, du **journal** et des **à faire**.
+3. Si la section **Dernière vérification** est manifestement obsolète ou vide alors qu’on travaille depuis longtemps, **mettre à jour la date** après lecture.
+
+## Après un travail significatif
+
+- **Ajouter une entrée** dans « Journal » (date courte + puces : quoi / où / pourquoi), ou résumer la session en mettant à jour une ligne existante.
+- Mettre à jour **Dernière vérification** si tu as modifié le fichier.
+- Ne pas y stocker de **secrets** (clés API, mots de passe).
+
+## Fichier absent
+
+- Si `MEMOIRE.md` n’existe pas, le **créer** avec la même structure (en-tête, dernière vérification, contexte, journal, à faire, notes).

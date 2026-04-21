@@ -13,7 +13,7 @@
 
 ## Contexte stable
 
-- **Environnement :** macOS, shell zsh, dépôt maison `~/` (git minimal : seul `.gitignore` versionné).
+- **Environnement :** macOS, shell zsh, dépôt maison `~/` (git : `.gitignore`, `MEMOIRE.md`, `cursor-rules/memoire-session.mdc`).
 - **Terminal / Cursor :** projet `~/CursorLauncher/` — app **Cursor AI Terminal** (`cursor agent` dans le terminal, pas Cursor.app). Raccourci `~/Cursor-AI-Terminal.command`, app installée `~/Applications/Cursor-AI-Terminal.app`.
 - **Variable utile :** `CURSOR_AGENT_WORKSPACE` pour le dossier de travail de l’agent.
 
@@ -25,6 +25,7 @@
 
 - Projet `CursorLauncher` : logo SVG, `AppIcon.icns`, `.app` avec `install.sh`, bannière terminal, `launch.sh` → `exec cursor agent --workspace …`.
 - Règle Cursor : lecture de ce fichier à chaque session (`memoire-session`).
+- **Git / mémoire :** la règle est versionnée dans `~/cursor-rules/memoire-session.mdc` ; le fichier utilisé par Cursor est un **lien symbolique** `~/.cursor/rules/memoire-session.mdc` → `../../cursor-rules/memoire-session.mdc` (évite de suivre tout `.cursor/` dans git, à cause du `.gitignore` interne Cursor).
 
 ---
 
@@ -37,4 +38,5 @@
 ## Notes
 
 - Pas de secrets dans ce fichier (tokens, mots de passe).
-- **Versionné dans git** : exception `!MEMOIRE.md` dans `~/.gitignore`.
+- **Versionné dans git** : exceptions `!MEMOIRE.md` et `!cursor-rules/memoire-session.mdc` dans `~/.gitignore`. Après un clone ou si le lien est cassé :  
+  `ln -sf ../../cursor-rules/memoire-session.mdc ~/.cursor/rules/memoire-session.mdc`
