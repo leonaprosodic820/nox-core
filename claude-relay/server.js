@@ -1347,7 +1347,9 @@ app.post('/prometheus/stream', async (req, res) => {
     const recentCtx    = sessionCtx.getRecentSessionsSummary(sessionId, 2);
     let ragCtx = '';
     try { if (ragEngine) ragCtx = ragEngine.searchForPrompt(message); } catch(e) {}
-    const allCtx = [webCtx, ragCtx, crossCtx, recentCtx].filter(Boolean).join('\n');
+    const profileCtx2 = cogProfile.buildContextString();
+    const identCtx2   = identityCore.buildIdentityContext();
+    const allCtx = [webCtx, ragCtx, crossCtx, recentCtx, profileCtx2, identCtx2].filter(Boolean).join('\n');
     const built  = promptEngine.buildPrompt(message, history.slice(-8), allCtx);
 
     send({ type: 'action', text: 'Rédaction en cours...' });
@@ -1465,7 +1467,7 @@ app.post('/prometheus/chat', async (req, res) => {
       if (cached) {
         response = cached; _routedTo = 'cache';
       } else {
-        const allCtx = [webCtx, ragCtx, episodicCtx, crossCtx, recentCtx].filter(Boolean).join('\n');
+        const allCtx = [webCtx, ragCtx, episodicCtx, crossCtx, recentCtx, profileCtx, existCtx].filter(Boolean).join('\n');
         const built = promptEngine.buildPrompt(message, history.slice(-8), allCtx);
         const isTrivial = built.type === 'chat' && message.trim().split(/\s+/).length <= 3 &&
           /^(bonjour|salut|hey|coucou|hello|hi|ok|oui|non|merci|thanks|bien|super|parfait|top|ca va|yo|bonsoir|cool|yes|no)$/i.test(message.trim());
