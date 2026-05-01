@@ -1463,8 +1463,9 @@ const identityCore = require('./identity-core');
         }
         if (!usedToT) {
           const deepMode = require('./deep-mode');
-          if (isTrivial && modelRouter) {
-            const resp = await race(modelRouter.call(message, { systemPrompt: built.prompt, maxTokens: 150 }), 8000);
+          if ((isTrivial || built.model === 'llama') && modelRouter) {
+            const mt = built.model === 'llama' ? built.maxTokens || 1000 : 150;
+            const resp = await race(modelRouter.call(message, { systemPrompt: built.prompt, maxTokens: mt }), 60000);
             response = typeof resp === 'string' ? resp : (resp.content?.[0]?.text || JSON.stringify(resp));
             _routedTo = 'llama';
           } else {

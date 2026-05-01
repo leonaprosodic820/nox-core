@@ -34,7 +34,7 @@ async function callLlama(prompt, opts = {}) {
       hostname: 'localhost', port: 11434,
       path: '/api/generate', method: 'POST',
       headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) },
-      timeout: opts.timeout || 30000,
+      timeout: opts.timeout || 60000,
     }, res => {
       let data = '';
       res.on('data', d => data += d);
