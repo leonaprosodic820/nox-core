@@ -1351,6 +1351,8 @@ app.post('/think/improve', requireRemoteAuth, async (req, res) => { try { res.js
 
 
 app.get('/rl/stats', (req, res) => { res.json(rlModule.getStats()); });
+app.get('/kg/stats', (req, res) => { try { res.json(require('./knowledge-graph').getStats()); } catch(e) { res.status(500).json({ error: e.message }); } });
+app.get('/kg/search', (req, res) => { try { const kg = require('./knowledge-graph'); const q = req.query.q || ''; res.json({ results: kg.findNode ? kg.findNode(q) : [] }); } catch(e) { res.status(500).json({ error: e.message }); } });
 
 
 // ── MONITOR + ANALYTICS + SOVEREIGNTY TEMPS RÉEL ──
