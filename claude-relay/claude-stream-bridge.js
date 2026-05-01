@@ -12,9 +12,11 @@ function callStreaming(prompt, opts = {}) {
       onToken = () => {},
       onDone = () => {},
       onError = () => {},
+      model = null,
     } = opts;
 
     const args = ['-p', '--output-format', 'text'];
+    if (model) args.push('--model', model);
 
     const claude = spawn('claude', args, {
       stdio: ['pipe', 'pipe', 'pipe'],

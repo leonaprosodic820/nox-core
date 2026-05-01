@@ -30,7 +30,7 @@ function setCache(key, data) {
 }
 
 async function call(prompt, options = {}) {
-  const { systemPrompt = null, maxTokens = 2000, timeoutMs = 60000, useCache = true } = options;
+  const { systemPrompt = null, maxTokens = 2000, timeoutMs = 60000, useCache = true, model = null } = options;
   stats.calls++;
 
   if (useCache) {
@@ -41,6 +41,7 @@ async function call(prompt, options = {}) {
 
   const fullPrompt = systemPrompt ? `${systemPrompt}\n\n---\n\n${prompt}` : prompt;
   const args = ['-p', '--output-format', 'text'];
+  if (model) args.push('--model', model);
 
   return new Promise((resolve, reject) => {
     const startTime = Date.now();
@@ -71,7 +72,7 @@ async function call(prompt, options = {}) {
       if (code === 0 && stdout.trim()) {
         const result = {
           content: [{ type: 'text', text: stdout.trim() }],
-          model: 'claude-opus-4-7-max-cli',
+          model: model || 'claude-sonnet-4-6',
           meta: { processingMs: elapsed, cached: false }
         };
         if (useCache && elapsed > 2000) {

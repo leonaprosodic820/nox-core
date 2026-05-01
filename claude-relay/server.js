@@ -1436,6 +1436,7 @@ app.post('/prometheus/stream', async (req, res) => {
     await streamBridge.callStreaming(message, {
       systemPrompt: built.prompt,
       maxTokens: built.maxTokens || 4000,
+      model: 'claude-sonnet-4-6',
       onToken: (text) => {
         fullResponse += text;
         send({ type: 'token', text });

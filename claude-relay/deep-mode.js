@@ -28,7 +28,7 @@ async function callDeep(message, systemPrompt, opts) {
 
   return new Promise(function(resolve, reject) {
     var timer = setTimeout(function() { reject(new Error('Timeout ' + (timeout/1000) + 's')); }, timeout);
-    bridge.call(message, { systemPrompt: systemPrompt, maxTokens: maxTokens, useCache: false })
+    bridge.call(message, { systemPrompt: systemPrompt, maxTokens: maxTokens, useCache: false, model: isDeep ? 'claude-opus-4-6' : 'claude-sonnet-4-6' })
       .then(function(resp) {
         clearTimeout(timer);
         var text = typeof resp === 'string' ? resp : (resp.content && resp.content[0] ? resp.content[0].text : '');
