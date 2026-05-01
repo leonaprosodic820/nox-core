@@ -45,16 +45,35 @@ async function applyModification(targetFile, modification, reason) {
   const bridge = require('./claude-api-bridge');
   let newContent;
   try {
-    const resp = await Promise.race([
-      bridge.call('Modifie "' + targetFile + '" pour: ' + reason + '\nModification: ' + modification + '\nContenu actuel:\n' + current.slice(0, 2000) + '\nRÈGLES: ne jamais modifier sovereignty, pas de process.exit, syntaxe Node.js valide. Retourne UNIQUEMENT le code.', { maxTokens: 1500 }),
-      new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 30000))
-    ]);
-    if (!resp) return { success: false, error: 'Timeout génération' };
-    newContent = (typeof resp === 'string' ? resp : (resp.content?.[0]?.text || '')).replace(/```javascript|```js|```/g, '').trim();
-  } catch(e) { return { success: false, error: 'Génération échouée: ' + e.message }; }
+    // Demander un DIFF (old_string → new_string) au lieu du fichier complet
+    const diffPrompt = 'Fichier: ' + targetFile + '. Modification: ' + modification +
+      '. Contenu actuel (extrait pertinent): ' + current.slice(0, 2000) +
+      '. Réponds UNIQUEMENT en JSON: {"old_string":"texte exact à remplacer","new_string":"nouveau texte"}. Le old_string doit être une copie EXACTE du texte existant.';
+    let diffResp;
+    try {
+      const lb = require('./llama-bridge');
+      diffResp = await Promise.race([
+        lb.callLlama(diffPrompt, { systemPrompt: 'Réponds uniquement en JSON.', maxTokens: 500, timeout: 30000 }),
+        new Promise((_, r) => setTimeout(() => r(new Error('Llama timeout')), 32000))
+      ]);
+    } catch(e) {
+      diffResp = await Promise.race([
+        bridge.call(diffPrompt, { maxTokens: 500, timeoutMs: 60000 }),
+        new Promise((_, r) => setTimeout(() => r(new Error('CLI timeout')), 62000))
+      ]);
+    }
+    if (!diffResp) return { success: false, error: 'Pas de réponse' };
+    const diffText = (typeof diffResp === 'string' ? diffResp : (diffResp.content?.[0]?.text || '')).replace(/```json|```/g, '').trim();
+    const jsonMatch = diffText.match(/\{[\s\S]*"old_string"[\s\S]*"new_string"[\s\S]*\}/);
+    if (!jsonMatch) return { success: false, error: 'Pas de diff JSON valide' };
+    const diff = JSON.parse(jsonMatch[0]);
+    if (!diff.old_string || !diff.new_string) return { success: false, error: 'old_string ou new_string manquant' };
+    if (!current.includes(diff.old_string)) return { success: false, error: 'old_string non trouvé dans le fichier' };
+    newContent = current.replace(diff.old_string, diff.new_string);
+  } catch(e) { return { success: false, error: 'Modification échouée: ' + e.message }; }
   const check = checkModification(targetFile, newContent);
   if (!check.allowed) return { success: false, error: 'Bloqué', reasons: check.errors.map(e => e.message) };
-  const tmp = fullPath + '.tmp';
+  const tmp = fullPath.replace(/\.js$/, '') + '.check.js';
   try { fs.writeFileSync(tmp, newContent); require('child_process').execSync('node --check "' + tmp + '"', { timeout: 5000 }); fs.unlinkSync(tmp); } catch(e) { try { fs.unlinkSync(tmp); } catch(e2) {} return { success: false, error: 'Syntaxe invalide' }; }
   const backup = fullPath + '.backup.' + Date.now();
   fs.copyFileSync(fullPath, backup);
@@ -72,13 +91,32 @@ function getModLog(limit) { try { return JSON.parse(fs.readFileSync(MOD_LOG, 'ut
 async function selfImproveGuided(issue, context) {
   const bridge = require('./claude-api-bridge');
   try {
-    const resp = await Promise.race([
-      bridge.call('Problème: "' + issue + '"\nFichiers modifiables: ' + [...MODIFIABLE_FILES].join(', ') + '\nJSON: {"targetFile":"...","modification":"...","reason":"...","priority":"low|medium|high","safe":true}', { maxTokens: 300, timeoutMs: 60000 }),
-      new Promise((_, r) => setTimeout(() => r(new Error('Timeout 60s — Claude CLI occupé')), 60000))
-    ]);
+    const modFiles = [...MODIFIABLE_FILES].join(', ');
+    const prompt = 'Tu dois répondre UNIQUEMENT avec ce JSON, rien d autre. ' +
+      'Problème à résoudre: ' + issue.slice(0, 150) + '. ' +
+      'Choisis UN fichier parmi: ' + modFiles + '. ' +
+      'JSON exact: {"targetFile":"prompt-engine.js","modification":"ajouter keywords météo","reason":"améliorer détection","priority":"medium","safe":true}';
+
+    // Appel direct Llama pour l'analyse (pas de lock CLI)
+    const llamaBridge = require('./llama-bridge');
+    let resp;
+    try {
+      const llamaResp = await Promise.race([
+        llamaBridge.callLlama(prompt, { systemPrompt: 'Réponds UNIQUEMENT en JSON valide.', maxTokens: 300, timeout: 30000 }),
+        new Promise((_, r) => setTimeout(() => r(new Error('Llama timeout')), 32000))
+      ]);
+      resp = typeof llamaResp === 'string' ? llamaResp : (llamaResp.content?.[0]?.text || '');
+    } catch(llamaErr) {
+      // Fallback bridge si Llama KO
+      const bridgeResp = await Promise.race([
+        bridge.call(prompt, { maxTokens: 300, timeoutMs: 60000 }),
+        new Promise((_, r) => setTimeout(() => r(new Error('CLI timeout')), 62000))
+      ]);
+      if (!bridgeResp) return { success: false, error: 'Pas de réponse' };
+      resp = typeof bridgeResp === 'string' ? bridgeResp : (bridgeResp.content?.[0]?.text || '');
+    }
     if (!resp) return { success: false, error: 'Pas de réponse' };
-    const rawText = typeof resp === 'string' ? resp : (resp.content?.[0]?.text || JSON.stringify(resp));
-    const text = rawText.replace(/```json|```/g, '').trim();
+    const text = resp.replace(/```json|```/g, '').trim().replace(/^[^{]*({)/, '$1').replace(/(})[^}]*$/, '$1').trim();
     const plan = JSON.parse(text);
     if (!plan.safe) return { success: false, reason: plan.reason, skipped: true };
     if (plan.priority === 'low') { logMod(plan.targetFile, plan.reason, plan.modification, 0, 0); return { success: true, logged: true, plan }; }
