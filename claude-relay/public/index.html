@@ -441,7 +441,7 @@ body{min-height:100%;background:var(--bg);color:var(--text);
 
 .chat-messages{
   flex:1;overflow-y:auto;padding:20px 24px;min-height:0;
-  scroll-behavior:smooth;display:flex;flex-direction:column;gap:14px;
+  display:flex;flex-direction:column;gap:14px;
 }
 .chat-messages::-webkit-scrollbar{width:3px}
 .chat-messages::-webkit-scrollbar-track{background:transparent}
@@ -1313,18 +1313,24 @@ async function loadModeHistory(mode) {
       if (m.role === 'user') addMsg('user', m.content);
       else if (m.role === 'assistant') addMsg('prom', m.content);
     });
-    msgs.scrollTop = msgs.scrollHeight;
+    const last=msgs.lastElementChild;
+    if(last)last.scrollIntoView({behavior:'auto',block:'end'});
   } catch(e) { showWelcome(); }
 }
+
+let _msgQueue=[];
+let _isStreaming=false;
 
 async function sendChat(){
   const inp=document.getElementById('chat-in');
   const msg=(inp?.value||'').trim();
+  if(!msg&&!_pendingFile)return;
+  inp.value='';inp.style.height='auto';
+  const w=document.getElementById('chat-welcome');if(w)w.style.display='none';
+
   if(_pendingFile){
-    inp.value='';inp.style.height='auto';
-    const w=document.getElementById('chat-welcome');if(w)w.style.display='none';
-    const label=_pendingFile.isImage?'[Image: '+_pendingFile.name+']':'[Document: '+_pendingFile.name+' ('+_pendingFile.size+'KB)]';
-    addMsg('user',label+' '+(msg||(_pendingFile.isImage?'Analyse cette image':'Lis et analyse ce document')));
+    const label=_pendingFile.isImage?'[Image: '+_pendingFile.name+']':'[Doc: '+_pendingFile.name+']';
+    addMsg('user',label+' '+(msg||(_pendingFile.isImage?'Analyse cette image':'Lis ce document')));
     const f=_pendingFile;removeFile();
     const th=document.getElementById('chat-thinking');if(th)th.style.display='flex';
     try{
@@ -1339,31 +1345,96 @@ async function sendChat(){
     }catch(e){if(th)th.style.display='none';addMsg('err','Erreur: '+e.message);}
     return;
   }
-  if(!msg||isPThinking)return;
-  inp.value='';
-  const w=document.getElementById('chat-welcome');if(w)w.style.display='none';
+
   addMsg('user',msg);
-  isPThinking=true;
-  const th=document.getElementById('chat-thinking');
-  if(th)th.style.display='flex';
-  const txts=['PROMETHEUS réfléchit...','Analyse en cours...','Claude Max CLI...','Traitement...'];
-  let ti=0;
-  const thi=setInterval(()=>{
-    const el=document.getElementById('think-txt');if(el)el.textContent=txts[ti++%txts.length];
-  },1800);
+  _msgQueue.push(msg);
+  if(!_isStreaming)_processQueue();
+}
+
+async function _processQueue(){
+  if(!_msgQueue.length){_isStreaming=false;return;}
+  _isStreaming=true;
+  const msg=_msgQueue.shift();
+  await _sendStream(msg);
+  _processQueue();
+}
+
+async function _sendStream(msg){
+  const token=localStorage.getItem('relay_token')||getCookie('relay_token');
+  const msgs=document.getElementById('chat-msgs');
+  const status=document.getElementById('stream-status');
+  const statTxt=document.getElementById('stream-action-text');
+
+  const bubble=document.createElement('div');
+  bubble.className='msg-bubble prom';
+  const now=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  bubble.innerHTML='<div class="bubble-inner">'+
+    '<div class="bubble-role" style="color:var(--green)">[ PROMETHEUS ] <span style="opacity:0.45">'+now+'</span></div>'+
+    '<div class="bubble-text prom-stream"></div></div>';
+  msgs.appendChild(bubble);
+  const textEl=bubble.querySelector('.prom-stream');
+  bubble.scrollIntoView({behavior:'auto',block:'end'});
+
+  if(status)status.classList.add('active');
+  if(statTxt)statTxt.textContent='Connexion...';
+
+  let fullText='';
   try{
-    const r=await fetch('/prometheus/chat',{
+    const resp=await fetch('/prometheus/stream',{
       method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({message:msg,sessionId:getSessionId(),mode:chatMode})
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({message:msg,sessionId:getSessionId(),mode:chatMode||'chat'})
     });
-    const d=await r.json();
-    if(d.error)throw new Error(d.error);
-    addMsg('prom',d.response);
-  }catch(e){addMsg('err','❌ '+e.message);}
-  finally{
-    isPThinking=false;clearInterval(thi);
-    if(th)th.style.display='none';
+    if(!resp.ok||!resp.body)throw new Error('Stream KO: '+resp.status);
+
+    const reader=resp.body.getReader();
+    const dec=new TextDecoder();
+    let buf='';
+
+    while(true){
+      const{done,value}=await reader.read();
+      if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n');
+      buf=lines.pop();
+      for(const line of lines){
+        if(!line.startsWith('data: '))continue;
+        try{
+          const d=JSON.parse(line.slice(6));
+          if(d.type==='action'&&statTxt)statTxt.textContent=d.text;
+          if(d.type==='token'){
+            fullText+=d.text;
+            textEl.innerHTML=renderMd(fullText)+'<span class="stream-cursor"></span>';
+            bubble.scrollIntoView({behavior:'auto',block:'end'});
+          }
+          if(d.type==='done'){
+            textEl.innerHTML=renderMd(fullText);
+          }
+          if(d.type==='error'){
+            textEl.innerHTML='<span style="color:#ef4444">'+d.text+'</span>';
+          }
+        }catch(e){}
+      }
+    }
+    if(!fullText)textEl.innerHTML='<span style="color:var(--muted)">(vide)</span>';
+    else textEl.innerHTML=renderMd(fullText);
+
+  }catch(e){
+    if(status)status.classList.remove('active');
+    textEl.innerHTML='<span style="color:rgba(238,242,255,0.4);font-size:12px">Fallback...</span>';
+    try{
+      const r=await fetch('/prometheus/chat',{
+        method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({message:msg,sessionId:getSessionId(),mode:chatMode||'chat'})
+      });
+      const data=await r.json();
+      textEl.innerHTML=renderMd(data.response||data.error||'?');
+    }catch(e2){
+      textEl.innerHTML='<span style="color:#ef4444">'+e2.message+'</span>';
+    }
+  }finally{
+    if(status)status.classList.remove('active');
+    bubble.scrollIntoView({behavior:'auto',block:'end'});
   }
 }
 
@@ -1380,8 +1451,9 @@ function addMsg(role,text){
     <div class="bubble-text">${role==='prom'?renderMd(text):esc(text)}</div>
   </div>`;
   msgs.appendChild(div);
-  requestAnimationFrame(()=>{msgs.scrollTop=msgs.scrollHeight;});
-  setTimeout(()=>{msgs.scrollTop=msgs.scrollHeight;},100);
+  div.scrollIntoView({behavior:'smooth',block:'end'});
+  setTimeout(()=>{div.scrollIntoView({behavior:'auto',block:'end'});},50);
+  setTimeout(()=>{div.scrollIntoView({behavior:'auto',block:'end'});},200);
 }
 
 function clearChat(){

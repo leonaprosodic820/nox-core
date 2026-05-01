@@ -648,7 +648,6 @@ body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
         background:rgba(0,0,0,0.35);border-radius:16px;
         border:1px solid rgba(79,172,254,0.08);margin-bottom:8px;
         min-height:0;
-        scroll-behavior:smooth;
         display:flex;flex-direction:column;gap:10px;
       ">
         <div id="pwelcome" style="text-align:center;padding:40px 16px;align-self:center">
@@ -1399,8 +1398,9 @@ function addPMsg(role,text){
   if(role==='prometheus'){content.innerHTML=renderMd(text);}else{content.textContent=text;}
   div.appendChild(hdr);div.appendChild(content);
   msgs.appendChild(div);
-  requestAnimationFrame(()=>{msgs.scrollTop=msgs.scrollHeight;});
-  setTimeout(()=>{msgs.scrollTop=msgs.scrollHeight;},100);
+  div.scrollIntoView({behavior:'auto',block:'end'});
+  setTimeout(()=>{div.scrollIntoView({behavior:'auto',block:'end'});},50);
+  setTimeout(()=>{div.scrollIntoView({behavior:'auto',block:'end'});},200);
 }
 
 function clearP(){

@@ -1237,24 +1237,22 @@ app.post('/prometheus/stream', async (req, res) => {
   res.setHeader('Content-Type', 'text/event-stream');
   res.setHeader('Cache-Control', 'no-cache');
   res.setHeader('Connection', 'keep-alive');
-  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('X-Accel-Buffering', 'no');
+  res.flushHeaders();
 
-  const send = (type, data) => {
-    if (!res.writableEnded) {
-      res.write('data: ' + JSON.stringify({ type, ...data }) + '\n\n');
-    }
+  const send = (obj) => {
+    if (!res.writableEnded) res.write('data: ' + JSON.stringify(obj) + '\n\n');
   };
-  const sendAction = (action) => send('action', { action });
-  const sendToken  = (token)  => send('token',  { token });
-  const sendDone   = (data)   => send('done',   data);
-  const sendError  = (error)  => send('error',  { error });
+
+  const hb = setInterval(() => {
+    if (!res.writableEnded) res.write(': ping\n\n');
+  }, 3000);
+
+  const cleanup = () => { clearInterval(hb); if (!res.writableEnded) res.end(); };
+  req.on('close', cleanup);
 
   try {
-    const hb = setInterval(() => {
-      if (!res.writableEnded) res.write(': heartbeat\n\n');
-    }, 5000);
-
-    sendAction('Analyse du message...');
+    send({ type: 'action', text: 'Analyse du message...' });
 
     if (!chatHistories.has(sessionId)) chatHistories.set(sessionId, loadChatSession(sessionId));
     const history = chatHistories.get(sessionId);
@@ -1263,7 +1261,7 @@ app.post('/prometheus/stream', async (req, res) => {
     let webCtx = '';
     const lm = message.toLowerCase();
     if (/météo|meteo|température|weather/i.test(lm)) {
-      sendAction('Recherche météo en cours...');
+      send({ type: 'action', text: 'Recherche météo...' });
       const city = message.match(/(?:météo|meteo|temps|température)\s+(?:à|a|de|du|en|pour)?\s*([A-Za-zÀ-ÿ\s-]+)/i)?.[1]?.trim() ||
         message.match(/(?:à|a)\s+([A-Za-zÀ-ÿ-]+)\s*$/i)?.[1]?.trim() || 'Paris';
       try {
@@ -1274,11 +1272,11 @@ app.post('/prometheus/stream', async (req, res) => {
         if (wr?.current) {
           webCtx = '[Meteo ' + (wr.city || city) + '] ' + wr.current.temp_c + '°C, ' + (wr.current.description || '') +
             ', Humidite: ' + wr.current.humidity + '%, Vent: ' + (wr.current.wind_kmh || '?') + ' km/h';
-          sendAction('Météo récupérée ✓');
+          send({ type: 'action', text: 'Météo récupérée ✓' });
         }
       } catch(e) {}
     } else if (/crypto|bitcoin|btc|ethereum/i.test(lm)) {
-      sendAction('Récupération prix crypto...');
+      send({ type: 'action', text: 'Récupération prix crypto...' });
       try {
         const wr = await Promise.race([
           fetch('http://localhost:7777/web/crypto?coins=bitcoin,ethereum').then(r => r.json()),
@@ -1286,23 +1284,23 @@ app.post('/prometheus/stream', async (req, res) => {
         ]);
         const coins = Array.isArray(wr) ? wr : wr?.coins;
         if (coins?.length) {
-          webCtx = '[Crypto] ' + coins.map(c => c.name + ': ' + (c.price_eur || c.price_usd || '?') + '€').join(', ');
-          sendAction('Prix crypto récupérés ✓');
+          webCtx = '[Crypto] ' + coins.map(c => c.name + ': ' + (c.price_eur || c.price_usd || '?') + '€ (' + (c.change_24h || '?') + ')').join(', ');
+          send({ type: 'action', text: 'Prix crypto récupérés ✓' });
         }
       } catch(e) {}
     } else if (/classement|ligue|sport|foot|résultat|news|actualit/i.test(lm)) {
-      sendAction('Recherche web en cours...');
+      send({ type: 'action', text: 'Recherche web...' });
       try {
         const bc = require('./browser-control');
         const wr = await Promise.race([bc.webSearch(message), new Promise(r => setTimeout(() => r(null), 8000))]);
         if (wr?.success && wr.answer) {
           webCtx = '[Web] ' + wr.answer.slice(0, 600);
-          sendAction('Données web trouvées ✓');
+          send({ type: 'action', text: 'Données web trouvées ✓' });
         }
       } catch(e) {}
     }
 
-    sendAction('Génération de la réponse...');
+    send({ type: 'action', text: 'PROMETHEUS pense...' });
     const promptEngine = require('./prompt-engine');
     const sessionCtx   = require('./session-context');
     const crossCtx     = sessionCtx.buildCrossSessionContext(sessionId);
@@ -1312,17 +1310,17 @@ app.post('/prometheus/stream', async (req, res) => {
     const allCtx = [webCtx, ragCtx, crossCtx, recentCtx].filter(Boolean).join('\n');
     const built  = promptEngine.buildPrompt(message, history.slice(-8), allCtx);
 
-    sendAction('PROMETHEUS pense...');
+    send({ type: 'action', text: 'Rédaction en cours...' });
 
     let fullResponse = '';
     await streamBridge.callStreaming(message, {
       systemPrompt: built.prompt,
       maxTokens: built.maxTokens || 4000,
-      onToken: (token) => {
-        fullResponse += token;
-        sendToken(token);
+      onToken: (text) => {
+        fullResponse += text;
+        send({ type: 'token', text });
       },
-      onError: (err) => sendAction('⚠ ' + err),
+      onError: (err) => send({ type: 'action', text: '⚠ ' + err }),
     });
 
     history.push({ role: 'assistant', content: fullResponse, ts: Date.now() });
@@ -1334,13 +1332,12 @@ app.post('/prometheus/stream', async (req, res) => {
       try { if (episodicMem) episodicMem.addEpisode({ text: message + '\n' + fullResponse, sessionId, role: 'exchange' }); } catch(e) {}
     });
 
-    clearInterval(hb);
-    sendDone({ sessionId, messageCount: history.length });
-    res.end();
-
+    send({ type: 'done', sessionId });
   } catch(e) {
-    sendError(e.message);
-    if (!res.writableEnded) res.end();
+    console.error('[Stream]', e.message);
+    send({ type: 'error', text: e.message });
+  } finally {
+    cleanup();
   }
 });
 
