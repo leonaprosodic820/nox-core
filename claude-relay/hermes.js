@@ -480,6 +480,28 @@ bot.onText(/\/vpsconfirm(?:\s+(\S+))?/, async (msg, match) => {
 });
 
 
+
+// ── AUTO-MODIFICATION ──
+bot.onText(/\/selfmod/, async (msg) => {
+  if (!auth(msg)) return deny(msg.chat.id);
+  try { const d = await api('/self/stats'); await bot.sendMessage(msg.chat.id, '*🔧 Auto-modification*\nMods: '+(d.totalModifications||0)+'\nIntégrité: '+(d.integrity?'✅':'🔴')+'\nProtégés: '+d.immutableFiles+'\nModifiables: '+d.modifiableFiles, { parse_mode: 'Markdown' }); }
+  catch(e) { await bot.sendMessage(msg.chat.id, '❌ ' + e.message); }
+});
+bot.onText(/\/selfimprove(?:\s+(.+))?/, async (msg, match) => {
+  if (!auth(msg)) return deny(msg.chat.id);
+  const issue = match?.[1]?.trim();
+  if (!issue) { await bot.sendMessage(msg.chat.id, 'Usage: /selfimprove <problème>'); return; }
+  await bot.sendMessage(msg.chat.id, '🔧 Analyse...');
+  try { const r = await api('/self/improve', 'POST', { issue }); await bot.sendMessage(msg.chat.id, r.success ? '✅ '+(r.logged?'Noté':'Appliqué: '+r.file) : '❌ '+(r.error||r.reason||'Échec')); }
+  catch(e) { await bot.sendMessage(msg.chat.id, '❌ ' + e.message); }
+});
+bot.onText(/\/integrity/, async (msg) => {
+  if (!auth(msg)) return deny(msg.chat.id);
+  try { const r = await api('/self/integrity'); await bot.sendMessage(msg.chat.id, r.ok ? '✅ *Intégrité INTACT*' : '🔴 *COMPROMIS*\n'+r.broken.map(b=>'• '+b.file).join('\n'), { parse_mode: 'Markdown' }); }
+  catch(e) { await bot.sendMessage(msg.chat.id, '❌ ' + e.message); }
+});
+
+
 bot.on('message', async (msg) => {
   if (!auth(msg)) return; if (msg.text?.startsWith('/')) return;
   const chatId = msg.chat.id;

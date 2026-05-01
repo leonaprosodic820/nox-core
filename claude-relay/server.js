@@ -81,6 +81,7 @@ const { AgentOrchestrator } = require('./specialized-agents');
 const pushNotif = require('./push-notifications');
 const selfImproveModule = require('./self-improvement');
 const convPipeline = require('./conversation-pipeline');
+const selfModifier = require('./self-modifier');
 const rlModule = require('./reinforcement-learning');
 const empathyEngine = require('./empathy-engine');
 const totpAuth = require('./totp-auth');
@@ -1434,6 +1435,20 @@ app.post('/pipeline/test', localOrAuth, async (req, res) => {
     const r = await convPipeline.run(req.body.message || 'test', [], 'prometheus-shadowroot');
     res.json(r);
   } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+
+// ── AUTO-MODIFICATION CONTRÔLÉE ──
+app.post('/self/check', requireRemoteAuth, (req, res) => { res.json(selfModifier.checkModification(req.body.file, req.body.content, req.body.type)); });
+app.post('/self/modify', requireRemoteAuth, async (req, res) => { res.json(await selfModifier.applyModification(req.body.file, req.body.modification, req.body.reason || 'Amélioration')); });
+app.post('/self/rollback', requireRemoteAuth, (req, res) => { res.json(selfModifier.rollback(req.body.file, req.body.backup)); });
+app.post('/self/improve', requireRemoteAuth, async (req, res) => { res.json(await selfModifier.selfImproveGuided(req.body.issue, req.body.context || '')); });
+app.get('/self/log', requireRemoteAuth, (req, res) => { res.json({ modifications: selfModifier.getModificationLog(50) }); });
+app.get('/self/stats', requireRemoteAuth, (req, res) => { res.json(selfModifier.getStats()); });
+app.get('/self/integrity', (req, res) => {
+  const check = selfModifier.verifyIntegrity();
+  if (!check.ok && global.sendHermesAlert) global.sendHermesAlert('CRITICAL', 'Intégrité', '🔴 Fichiers modifiés: ' + check.broken.map(b => b.file).join(', '));
+  res.json(check);
 });
 
 // ── PROMETHEUS STREAMING SSE ──
