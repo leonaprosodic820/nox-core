@@ -1370,15 +1370,18 @@ async function _sendStream(msg){
   const now=new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
   bubble.innerHTML='<div class="bubble-inner">'+
     '<div class="bubble-role" style="color:var(--green)">[ PROMETHEUS ] <span style="opacity:0.45">'+now+'</span></div>'+
+    '<div class="prom-thinking" style="font-family:JetBrains Mono,monospace;font-size:10px;color:var(--a1);opacity:0.7;margin-bottom:6px;line-height:1.8"></div>'+
     '<div class="bubble-text prom-stream"></div></div>';
   msgs.appendChild(bubble);
   const textEl=bubble.querySelector('.prom-stream');
+  const thinkEl=bubble.querySelector('.prom-thinking');
   bubble.scrollIntoView({behavior:'auto',block:'end'});
 
   if(status)status.classList.add('active');
   if(statTxt)statTxt.textContent='Connexion...';
 
   let fullText='';
+  const actions=[];
   try{
     const resp=await fetch('/prometheus/stream',{
       method:'POST',
@@ -1401,7 +1404,12 @@ async function _sendStream(msg){
         if(!line.startsWith('data: '))continue;
         try{
           const d=JSON.parse(line.slice(6));
-          if(d.type==='action'&&statTxt)statTxt.textContent=d.text;
+          if(d.type==='action'){
+            if(statTxt)statTxt.textContent=d.text;
+            actions.push(d.text);
+            thinkEl.innerHTML=actions.map(a=>'<div>'+a+'</div>').join('');
+            bubble.scrollIntoView({behavior:'auto',block:'end'});
+          }
           if(d.type==='token'){
             fullText+=d.text;
             textEl.innerHTML=renderMd(fullText)+'<span class="stream-cursor"></span>';
@@ -1409,6 +1417,7 @@ async function _sendStream(msg){
           }
           if(d.type==='done'){
             textEl.innerHTML=renderMd(fullText);
+            thinkEl.style.display='none';
           }
           if(d.type==='error'){
             textEl.innerHTML='<span style="color:#ef4444">'+d.text+'</span>';
@@ -1418,6 +1427,7 @@ async function _sendStream(msg){
     }
     if(!fullText)textEl.innerHTML='<span style="color:var(--muted)">(vide)</span>';
     else textEl.innerHTML=renderMd(fullText);
+    thinkEl.style.display='none';
 
   }catch(e){
     if(status)status.classList.remove('active');
