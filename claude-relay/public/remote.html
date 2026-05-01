@@ -1225,7 +1225,7 @@ async function ss(combo){
 /* ══ CLAUDE ══ */
 /* ══ PROMETHEUS CHAT ══ */
 let chatMode='chat';
-let chatSess='remote-'+Date.now();
+let chatSess='prometheus-shadowroot';
 let isPThinking=false;
 
 const MODE_HINTS={
@@ -1497,7 +1497,7 @@ function clearP(){
     <div style="font-family:'Syne',sans-serif;font-weight:700;font-size:16px;color:var(--a1);margin-bottom:8px">PROMETHEUS</div>
     <div style="font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted)">Chat &middot; Mac &middot; Mission</div>
   </div>`;
-  chatSess='remote-'+Date.now();
+  chatSess='prometheus-shadowroot';
   toast('Conversation effacée');
 }
 function clearChat(){clearP();}

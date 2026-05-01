@@ -1322,7 +1322,7 @@ app.post('/doc/upload', localOrAuth, docUpload.single('document'), (req, res) =>
 
 // ── PROMETHEUS STREAMING SSE ──
 app.post('/prometheus/stream', async (req, res) => {
-  const { message, sessionId = 'wpa-stream', mode = 'chat' } = req.body;
+  const { message, sessionId = 'prometheus-shadowroot', mode = 'chat' } = req.body;
   if (!message) return res.status(400).json({ error: 'message requis' });
 
   res.setHeader('Content-Type', 'text/event-stream');
@@ -1441,7 +1441,7 @@ app.post('/prometheus/chat', async (req, res) => {
     if (!res.headersSent) res.json({ response: 'Timeout — la requete prend trop de temps. Reessaie ou simplifie.', error: 'timeout', sessionId: req.body?.sessionId, canRetry: true });
   }, 660000);
   try {
-    const { message, sessionId = 'local-default', mode = 'chat' } = req.body;
+    const { message, sessionId = 'prometheus-shadowroot', mode = 'chat' } = req.body;
     if (!message) { clearTimeout(chatTimer); return res.status(400).json({ error: 'Message requis' }); }
     if (mode === 'classify') {
       try {
@@ -1679,7 +1679,7 @@ try { fs.readdirSync(CHAT_DIR).filter(f => f.endsWith('.json')).forEach(f => {
 
 app.post('/remote/prometheus/chat', requireRemoteAuth, async (req, res) => {
   try {
-    const { message, sessionId = 'remote-default', mode = 'chat' } = req.body;
+    const { message, sessionId = 'prometheus-shadowroot', mode = 'chat' } = req.body;
     if (!message) return res.status(400).json({ error: 'Message requis' });
 
     if (!chatHistories.has(sessionId)) chatHistories.set(sessionId, loadChatSession(sessionId));
@@ -2161,7 +2161,7 @@ app.post('/prometheus/chat/stream', async (req, res) => {
 });
 
 app.post('/remote/prometheus/chat/stream', requireRemoteAuth, async (req, res) => {
-  const { message, sessionId = 'remote-chat', mode = 'chat' } = req.body;
+  const { message, sessionId = 'prometheus-shadowroot', mode = 'chat' } = req.body;
   if (!message) return res.status(400).json({ error: 'message requis' });
   await handleStreamChat(req, res, message, sessionId, mode);
 });

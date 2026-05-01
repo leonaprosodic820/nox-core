@@ -391,7 +391,7 @@ bot.on('message', async (msg) => {
       const fi = await bot.getFile(photo.file_id);
       const imgBuf = await new Promise((resolve, reject) => { const chunks = []; https.get(`https://api.telegram.org/file/bot${TOKEN}/${fi.file_path}`, res => { res.on('data', c => chunks.push(c)); res.on('end', () => resolve(Buffer.concat(chunks))); }).on('error', reject); });
       const caption = msg.caption || 'Analyse cette image en détail';
-      const resp = await api('/prometheus/chat', 'POST', { message: caption + ' [Image jointe analysée par Vision]', sessionId: 'hermes-vision', mode: 'chat' });
+      const resp = await api('/prometheus/chat', 'POST', { message: caption + ' [Image jointe analysée par Vision]', sessionId: 'prometheus-shadowroot', mode: 'chat' });
       const visionText = `👁 PROMETHEUS Vision\n\n${(resp.response || 'Analyse non disponible').slice(0, 3800)}`;
       await bot.sendMessage(msg.chat.id, visionText).catch(() => bot.sendMessage(msg.chat.id, visionText.slice(0, 2000)));
     } catch(e) { await bot.sendMessage(msg.chat.id, '❌ Vision: ' + e.message); }
@@ -412,7 +412,7 @@ bot.on('message', async (msg) => {
       const transcription = await transcribeAudio(tmpPath);
       if (!transcription || transcription.length < 2) { await bot.sendMessage(chatId, '🎤 Aucune parole détectée'); return; }
       await bot.sendChatAction(chatId, 'typing');
-      const resp = await api('/prometheus/chat', 'POST', { message: transcription, sessionId: 'hermes-voice', mode: 'chat' });
+      const resp = await api('/prometheus/chat', 'POST', { message: transcription, sessionId: 'prometheus-shadowroot', mode: 'chat' });
       await sendReply(chatId, resp.response || 'Pas de réponse', { transcription, forceVoice: true });
       try { require('./analytics-tracker').track('voice_message', { duration }); } catch (e) {}
     } catch (e) { await bot.sendMessage(chatId, `❌ Audio: ${e.message}`); }
@@ -471,7 +471,7 @@ bot.on('message', async (msg) => {
   const actionable = /fais|crée|lance|ouvre|montre|génère|vérifie|analyse|cherche|trouve|envoie|configure|installe|supprime/i.test(text);
   if (actionable) {
     try {
-      const cls = await api('/prometheus/chat', 'POST', { message: `Classifie en 1 mot: IMAGE|WEBSITE|DESIGN|SCREENSHOT|STATUS|OPTIMIZE|CRYPTO|WEATHER|MUSIC|LAUNCH|EMAIL|BACKUP|MISSION|CODE|CHAT. Message: "${text.slice(0,100)}"`, sessionId: 'hermes-classify', mode: 'chat' });
+      const cls = await api('/prometheus/chat', 'POST', { message: `Classifie en 1 mot: IMAGE|WEBSITE|DESIGN|SCREENSHOT|STATUS|OPTIMIZE|CRYPTO|WEATHER|MUSIC|LAUNCH|EMAIL|BACKUP|MISSION|CODE|CHAT. Message: "${text.slice(0,100)}"`, sessionId: 'prometheus-shadowroot', mode: 'chat' });
       const intent = (cls.response || '').trim().toUpperCase().replace(/[^A-Z]/g, '');
       const quickHandlers = { IMAGE: () => generateImage(chatId, text), WEBSITE: () => buildSite(chatId, text), DESIGN: () => createDesign(chatId, text), SCREENSHOT: () => doScreenshot(chatId), STATUS: () => doStatus(chatId), OPTIMIZE: () => doOptimize(chatId), CRYPTO: () => doCrypto(chatId), WEATHER: () => doWeather(chatId, 'Paris'), LAUNCH: async () => { const app = text.replace(/lance|ouvre|démarre/gi, '').trim(); await api('/mac/app/launch', 'POST', { app }); await bot.sendMessage(chatId, `✅ ${app} lancé`); }, EMAIL: async () => { const d = await api('/email/unread?max=5'); const e = d.emails || []; await bot.sendMessage(chatId, e.length ? e.slice(0, 3).map(x => `📧 *${x.subject}*`).join('\n') : '📭 Aucun email', { parse_mode: 'Markdown' }); }, BACKUP: () => doBackup(chatId), MISSION: () => launchMission(chatId, text), CODE: () => launchCC(chatId, text) };
       if (quickHandlers[intent]) { await quickHandlers[intent](); return; }
@@ -481,7 +481,7 @@ bot.on('message', async (msg) => {
   // Chat PROMETHEUS standard
   await bot.sendChatAction(chatId, 'typing');
   try {
-    const r = await api('/prometheus/chat', 'POST', { message: text, sessionId: 'hermes-telegram', mode: 'chat' });
+    const r = await api('/prometheus/chat', 'POST', { message: text, sessionId: 'prometheus-shadowroot', mode: 'chat' });
     await sendReply(chatId, r.response || r.error || 'Pas de réponse', { forceVoice: vi === 'once' });
   } catch (e) { await bot.sendMessage(chatId, '❌ ' + e.message); }
 });
@@ -672,7 +672,7 @@ async function doNews(chatId, count) {
     if (result.success && result.answer) {
       await bot.sendMessage(chatId, '📰 Actualites France — ' + new Date().toLocaleDateString('fr-FR', {day:'numeric',month:'long'}) + '\n\n' + (result.answer || '').slice(0, 3500));
     } else {
-      const resp = await api('/remote/prometheus/chat', 'POST', { message: 'Quelles sont les ' + count + ' actualites les plus importantes en France aujourd\'hui ?', sessionId: 'news', mode: 'chat' });
+      const resp = await api('/remote/prometheus/chat', 'POST', { message: 'Quelles sont les ' + count + ' actualites les plus importantes en France aujourd\'hui ?', sessionId: 'prometheus-shadowroot', mode: 'chat' });
       const r = await resp.json ? await resp.json() : resp;
       await bot.sendMessage(chatId, '📰 Actualites France\n\n' + ((r.response || r) + '').slice(0, 3500));
     }
@@ -709,7 +709,7 @@ bot.onText(/\/analyzepage/, async (msg) => {
 
 bot.onText(/\/compress(?:\s+(.+))?/, async (msg, match) => {
   if (!auth(msg)) return deny(msg.chat.id);
-  const sessionId = match?.[1]?.trim() || 'hermes-telegram';
+  const sessionId = match?.[1]?.trim() || 'prometheus-shadowroot';
   await bot.sendChatAction(msg.chat.id, 'typing');
   try {
     const r = await api('/context/compress', 'POST', { sessionId });

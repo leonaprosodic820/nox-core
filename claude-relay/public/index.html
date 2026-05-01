@@ -1032,7 +1032,9 @@ body{min-height:100%;background:var(--bg);color:var(--text);
 
 /* ══ STATE ══ */
 let ws=null,sessions={},activeSessionId=null,chatMode='chat';
-let isPThinking=false,chatSess='local-'+Date.now();
+let isPThinking=false,chatSess='prometheus-shadowroot';
+function getSessionId(){return 'prometheus-shadowroot';}
+const SESSION_IDS={chat:'prometheus-shadowroot',command:'prometheus-shadowroot',mission:'prometheus-shadowroot'};
 let monInterval=null;
 const PAGE_TITLES={home:'Dashboard',chat:'PROMETHEUS Chat',monitor:'Monitor',sovereignty:'Sovereignty Control',history:'Historique'};
 
@@ -1468,12 +1470,7 @@ function addMsg(role,text){
 
 function clearChat(){
   const token=localStorage.getItem('relay_token')||getCookie('relay_token');
-  const sid=getSessionId();
-  fetch('/memory/session/'+encodeURIComponent(sid),{method:'DELETE',headers:{'Authorization':'Bearer '+token}}).catch(()=>{});
-  const newId=Date.now().toString();
-  const mk=chatMode==='command'?'command':chatMode==='mission'?'mission':'chat';
-  localStorage.setItem('wpa-'+mk+'-id',newId);
-  SESSION_IDS[mk]='wpa-'+mk+'-'+newId;
+  fetch('/memory/session/prometheus-shadowroot',{method:'DELETE',headers:{'Authorization':'Bearer '+token}}).catch(()=>{});
   const msgs=document.getElementById('chat-msgs');if(!msgs)return;
   msgs.innerHTML=`<div id="chat-welcome" style="text-align:center;padding:80px 20px;align-self:center">
     <img src="prometheus-logo.svg" alt="PROMETHEUS" style="width:72px;height:72px;margin-bottom:20px;
@@ -1487,7 +1484,7 @@ function clearChat(){
       Chat &middot; Commande Mac &middot; Mission autonome
     </div>
   </div>`;
-  chatSess='local-'+Date.now();
+  chatSess='prometheus-shadowroot';
   toast('Conversation effacée');
 }
 
