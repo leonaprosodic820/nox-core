@@ -80,6 +80,8 @@ const longTermMemory  = require('./long-term-memory');
 const { AgentOrchestrator } = require('./specialized-agents');
 const pushNotif = require('./push-notifications');
 const selfImproveModule = require('./self-improvement');
+const rlModule = require('./reinforcement-learning');
+const empathyEngine = require('./empathy-engine');
 const totpAuth = require('./totp-auth');
 const projMemory = require('./project-memory');
 const analytics = require('./analytics-tracker');
@@ -1347,6 +1349,9 @@ app.get('/think/thoughts', localOrAuth, (req, res) => { res.json({ thoughts: sel
 app.post('/think/now', requireRemoteAuth, async (req, res) => { try { const t = await selfImproveModule.forceThink(); res.json(t || { error: 'Pensée impossible' }); } catch(e) { res.status(500).json({ error: e.message }); } });
 app.post('/think/improve', requireRemoteAuth, async (req, res) => { try { res.json(await selfImproveModule.executeImprovement(req.body.action, req.body.reasoning)); } catch(e) { res.status(500).json({ error: e.message }); } });
 
+
+app.get('/rl/stats', (req, res) => { res.json(rlModule.getStats()); });
+
 // ── PROMETHEUS STREAMING SSE ──
 app.post('/prometheus/stream', async (req, res) => {
   const { message, sessionId = 'prometheus-shadowroot', mode = 'chat' } = req.body;
@@ -1596,7 +1601,11 @@ app.post('/prometheus/chat', async (req, res) => {
       try { require('./session-context').updateProfile(message, response).catch(() => {}); } catch {}
       try { cogModule.learn(message, response); } catch(e) {}
       try { longTermMemory.extractAndStore(message, response); } catch(e) {}
-      try { selfImproveModule.recordResponse(message, response, { promptType: built?.type, routedTo: _routedTo, duration: Date.now() - _startTime }); } catch(e) {}
+      try {
+          const quality = selfImproveModule.analyzeResponseQuality(message, response);
+          rlModule.learn(message, built?.type, _routedTo || 'claude', quality, Date.now() - _startTime);
+        } catch(e) {}
+        try { selfImproveModule.recordResponse(message, response, { promptType: built?.type, routedTo: _routedTo, duration: Date.now() - _startTime }); } catch(e) {}
     });
     clearTimeout(chatTimer);
     if (!res.headersSent) res.json({ response, sessionId, messageCount: history.length, mode, routedTo: _routedTo });
