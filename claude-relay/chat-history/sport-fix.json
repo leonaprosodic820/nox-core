@@ -1,0 +1,18 @@
+{
+  "sessionId": "sport-fix",
+  "mode": "sport",
+  "updatedAt": "2026-05-01T09:08:31.246Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "classement ligue 1",
+      "ts": 1777626481352
+    },
+    {
+      "role": "assistant",
+      "content": "Je n'ai pas l'autorisation d'utiliser la recherche web pour le moment. Avec les données partielles que j'ai reçues, je vois qu'il y a un match **Nantes vs Marseille** prévu le **2 mai 2026** au Stade de la Beaujoire, mais les données du classement complet n'ont pas été transmises.\n\nAccorde-moi l'accès à la recherche web pour récupérer le classement complet, ou si tu as une autre source en tête, dis-moi.",
+      "ts": 1777626511246
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "sessionId": "sse-v2",
+  "mode": "sse",
+  "updatedAt": "2026-04-30T19:21:33.604Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "dis OK",
+      "ts": 1777576887227
+    },
+    {
+      "role": "assistant",
+      "content": "OK.",
+      "ts": 1777576893604
+    }
+  ]
+}

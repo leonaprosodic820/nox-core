@@ -1,0 +1,18 @@
+{
+  "sessionId": "audit-final",
+  "mode": "audit",
+  "updatedAt": "2026-04-30T21:38:19.054Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "bonjour",
+      "ts": 1777585098458
+    },
+    {
+      "role": "assistant",
+      "content": "Bonjour ! Comment puis-je vous aider aujourd'hui ?",
+      "ts": 1777585099053
+    }
+  ]
+}

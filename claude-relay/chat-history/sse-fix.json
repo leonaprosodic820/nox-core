@@ -1,0 +1,18 @@
+{
+  "sessionId": "sse-fix",
+  "mode": "sse",
+  "updatedAt": "2026-04-30T19:21:02.506Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "ping",
+      "ts": 1777576862198
+    },
+    {
+      "role": "assistant",
+      "content": "",
+      "ts": 1777576862506
+    }
+  ]
+}

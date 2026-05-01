@@ -1,0 +1,11 @@
+config.json
+.env
+logs/
+sessions/
+projects/
+decisions/
+downloads/
+node_modules/
+*.json.backup
+coverage/
+knowledge/

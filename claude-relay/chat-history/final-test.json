@@ -1,0 +1,18 @@
+{
+  "sessionId": "final-test",
+  "mode": "final",
+  "updatedAt": "2026-04-30T18:31:56.698Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Météo Paris",
+      "ts": 1777573906585
+    },
+    {
+      "role": "assistant",
+      "content": "## Météo Paris — 30 avril 2026\n\n**Actuellement : ☀️ 22°C** (ressenti 24°C)\n- Humidité : 29% · Vent : 19 km/h Est\n- Pression : 1018 hPa · Visibilité : 10 km\n- Couverture nuageuse : 0%\n\n### Prévisions\n\n| Jour | Conditions | Min / Max | Pluie |\n|------|-----------|-----------|-------|\n| **Aujourd'hui** | ☀️ Sunny | 10° / 21° | 0 mm |\n| **Ven 1 mai** | ☀️ Sunny | 10° / **25°** | 0 mm |\n| **Sam 2 mai** | ☀️ Sunny | 14° / **25°** | 0 mm |\n\nGrand soleil sur Paris pour les 3 prochains jours. Montée progressive des températures jusqu'à **25°C** ce week-end. Zéro pluie en vue.\n\n*Source : wttr.in*",
+      "ts": 1777573916698
+    }
+  ]
+}

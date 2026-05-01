@@ -1,0 +1,18 @@
+{
+  "sessionId": "rt1",
+  "mode": "rt1",
+  "updatedAt": "2026-05-01T07:03:53.369Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "bonjour",
+      "ts": 1777619031192
+    },
+    {
+      "role": "assistant",
+      "content": "Bonjour ! Comment allez-vous aujourd'hui ? Est-ce que vous avez besoin d'aide ou de conseils sur quelque chose ?",
+      "ts": 1777619033361
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "sessionId": "meteo-final",
+  "mode": "meteo",
+  "updatedAt": "2026-05-01T09:14:47.334Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "donne moi la météo de paris",
+      "ts": 1777626879398
+    },
+    {
+      "role": "assistant",
+      "content": "Paris aujourd'hui : **14°C**, ensoleillé. Humidité 47%, vent 10 km/h ESE, ressenti 14°C, UV faible (1). Belle journée.",
+      "ts": 1777626887334
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "sessionId": "sport-fix3",
+  "mode": "sport",
+  "updatedAt": "2026-05-01T09:10:17.997Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "classement ligue 1",
+      "ts": 1777626590459
+    },
+    {
+      "role": "assistant",
+      "content": "Voici ce que je peux te dire sur la **Ligue 1 2025-2026** en ce début mai 2026, d'après les données partielles disponibles :\n\n**Prochains matchs :**\n- **Nantes vs Marseille** — 2 mai 2026, Stade de la Beaujoire\n\nPour le classement complet et à jour, les données temps réel que j'ai reçues ne contiennent que les matchs à venir, pas le tableau du championnat.\n\nTu peux consulter le classement live sur :\n- **ligue1.fr** (site officiel)\n- **lequipe.fr/football/ligue-1**\n- **flashscore.fr**\n\nTu veux que je réessaie de récupérer le classement complet ?",
+      "ts": 1777626617996
+    }
+  ]
+}

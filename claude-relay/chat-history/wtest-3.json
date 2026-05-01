@@ -1,0 +1,18 @@
+{
+  "sessionId": "wtest-3",
+  "mode": "wtest",
+  "updatedAt": "2026-04-30T18:29:41.269Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Résultats Ligue 1",
+      "ts": 1777573771773
+    },
+    {
+      "role": "assistant",
+      "content": "## Ligue 1 — Samedi 2 mai 2026\n\nPas de résultats encore, tous les matchs sont **programmés** pour samedi :\n\n| Heure | Domicile | | Extérieur | Stade |\n|-------|----------|---|-----------|-------|\n| **15h00** | Nantes | vs | **Marseille** | Beaujoire |\n| **17h00** | **PSG** | vs | Lorient | Parc des Princes |\n| **19h00** | Metz | vs | **Monaco** | Saint-Symphorien |\n| **21h05** | Nice | vs | **Lens** | Allianz Riviera |\n\nJournée complète après-demain. Tu veux que je te rappelle les scores samedi soir ?",
+      "ts": 1777573781269
+    }
+  ]
+}

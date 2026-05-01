@@ -1,0 +1,18 @@
+{
+  "sessionId": "rt2",
+  "mode": "rt2",
+  "updatedAt": "2026-05-01T07:04:15.357Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "explique le machine learning",
+      "ts": 1777619038413
+    },
+    {
+      "role": "assistant",
+      "content": "**Machine Learning** — l'art de faire apprendre une machine par l'exemple plutôt que par des règles écrites à la main.\n\n## Le principe\n\nAu lieu de programmer `si X alors Y`, tu donnes à l'algorithme **des milliers d'exemples** (données + résultats attendus) et il **découvre les patterns** tout seul.\n\n## Les 3 types\n\n| Type | Principe | Exemple |\n|---|---|---|\n| **Supervisé** | Données étiquetées (input → output connu) | Détecter un spam |\n| **Non supervisé** | Données sans étiquettes, trouver des groupes | Segmenter des clients |\n| **Renforcement** | Apprendre par essai/erreur + récompense | AlphaGo, robots |\n\n## Comment ça marche concrètement\n\n1. **Données** — tu collectes un dataset (images, textes, chiffres)\n2. **Modèle** — tu choisis un algorithme (régression, arbre de décision, réseau de neurones)\n3. **Entraînement** — le modèle ajuste ses paramètres pour minimiser l'erreur\n4. **Évaluation** — tu testes sur des données qu'il n'a jamais vues\n5. **Déploiement** — il fait des prédictions en production\n\n## Deep Learning = ML sous stéroïdes\n\nLes **réseaux de neurones profonds** (deep learning) sont un sous-ensemble du ML avec des dizaines de couches. C'est ce qui fait tourner GPT, la reconnaissance d'images, la traduction automatique — et moi.\n\n## En une phrase\n\n> **ML = donner des données à un algorithme pour qu'il apprenne les règles, au lieu de les coder soi-même.**\n\nDes questions sur un aspect spécifique — maths derrière, frameworks Python, cas d'usage concret ?",
+      "ts": 1777619055351
+    }
+  ]
+}

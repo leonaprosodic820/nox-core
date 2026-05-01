@@ -1,0 +1,18 @@
+{
+  "sessionId": "test-timeout",
+  "mode": "test",
+  "updatedAt": "2026-05-01T00:08:38.706Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "bonjour",
+      "ts": 1777594110095
+    },
+    {
+      "role": "assistant",
+      "content": "Bonjour ! Comment puis-je vous aider aujourd'hui ?",
+      "ts": 1777594118697
+    }
+  ]
+}

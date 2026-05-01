@@ -1,0 +1,18 @@
+{
+  "sessionId": "deep-test2",
+  "mode": "deep",
+  "updatedAt": "2026-05-01T08:40:27.796Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "construis un système complet de gestion de contacts en Python avec API REST",
+      "ts": 1777624777766
+    },
+    {
+      "role": "assistant",
+      "content": "On dirait que la permission d'écriture est bloquée. Peux-tu accepter le prompt de permission qui apparaît, ou bien ajuster tes settings pour autoriser l'écriture dans `contacts-api/` ? \n\nSinon je peux te fournir tout le code que tu copieras manuellement — dis-moi comment tu préfères procéder.",
+      "ts": 1777624827796
+    }
+  ]
+}

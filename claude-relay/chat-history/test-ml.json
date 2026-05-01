@@ -1,0 +1,18 @@
+{
+  "sessionId": "test-ml",
+  "mode": "test",
+  "updatedAt": "2026-05-01T07:01:59.010Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "explique le machine learning en 2 phrases",
+      "ts": 1777618911863
+    },
+    {
+      "role": "assistant",
+      "content": "Le **machine learning** est une branche de l'intelligence artificielle qui consiste à développer des algorithmes capables d'apprendre et de s'améliorer automatiquement en fonction de données, sans nécessiter de programmes spécifiques ou de manipulation manuelle. Cela permet aux ordinateurs de prendre des décisions et de prédire des résultats avec une précision croissante, tout en apprenant à partir de grandes quantités de données.",
+      "ts": 1777618919006
+    }
+  ]
+}

@@ -1,0 +1,18 @@
+{
+  "sessionId": "speed-test",
+  "mode": "speed",
+  "updatedAt": "2026-05-01T06:56:00.776Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "bonjour",
+      "ts": 1777618559271
+    },
+    {
+      "role": "assistant",
+      "content": "Bonjour ! Comment puis-je vous aider aujourd'hui ?",
+      "ts": 1777618560768
+    }
+  ]
+}

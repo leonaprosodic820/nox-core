@@ -1,0 +1,28 @@
+{
+  "sessionId": "local-1777626588083",
+  "mode": "local",
+  "updatedAt": "2026-05-01T09:11:37.832Z",
+  "messageCount": 4,
+  "messages": [
+    {
+      "role": "user",
+      "content": "bonjour",
+      "ts": 1777626605374
+    },
+    {
+      "role": "assistant",
+      "content": "Qu'est-ce qui se passe aujourd'hui ?",
+      "ts": 1777626611767
+    },
+    {
+      "role": "user",
+      "content": "donne moi la meteo de paris",
+      "ts": 1777626679101
+    },
+    {
+      "role": "assistant",
+      "content": "**Météo Paris — 1er mai 2026**\n\nJe n'ai pas accès aux données météo en temps réel pour l'instant. Voici ce que je peux te dire :\n\n**Climat typique début mai à Paris :**\n- **Températures** : 10-18°C\n- **Conditions** : variable, alternance soleil/nuages, averses possibles\n- **Vent** : léger à modéré\n\nPour la météo exacte en direct, tu peux checker :\n- **meteofrance.com**\n- **weather.com**\n\nTu veux que je retente la recherche ?",
+      "ts": 1777626697832
+    }
+  ]
+}

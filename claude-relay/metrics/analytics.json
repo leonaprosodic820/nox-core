@@ -1,0 +1,76 @@
+{
+  "daily": {
+    "2026-04-30": {
+      "tokens": 0,
+      "sessions": 0,
+      "chats": 1,
+      "decisions": 0,
+      "webFetches": 1,
+      "commands": 0,
+      "screenshots": 0,
+      "responseMs": [
+        500
+      ]
+    }
+  },
+  "weekly": {
+    "2026-04-27": {
+      "tokens": 0,
+      "sessions": 0,
+      "chats": 1,
+      "decisions": 0
+    }
+  },
+  "monthly": {
+    "2026-04": {
+      "tokens": 0,
+      "sessions": 0,
+      "chats": 1,
+      "decisions": 0
+    }
+  },
+  "total": {
+    "tokens": 0,
+    "sessions": 0,
+    "decisions": 0,
+    "chats": 1,
+    "webFetches": 1,
+    "screenshots": 0,
+    "commands": 0
+  },
+  "perf": {
+    "lastUpdated": "2026-04-30T19:18:51.142Z"
+  },
+  "costs": {
+    "totalUSD": 0
+  },
+  "sessions": [],
+  "hourly": {
+    "2026-04-30": [
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      0,
+      1,
+      0,
+      0
+    ]
+  }
+}

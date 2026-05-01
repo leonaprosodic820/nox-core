@@ -1,0 +1,18 @@
+{
+  "sessionId": "test-routing",
+  "mode": "test",
+  "updatedAt": "2026-05-01T07:01:26.121Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "explique moi le machine learning",
+      "ts": 1777618856091
+    },
+    {
+      "role": "assistant",
+      "content": "**Machine Learning : un sous-ensemble de l'intelligence artificielle**\n\nLe **machine learning** (ML) est une branche de l'intelligence artificielle (IA) qui consiste à développer des algorithmes et des modèles pour qu'ils puissent apprendre et s'améliorer automatiquement, sans être explicitement programmés.\n\nEn d'autres termes, le machine learning permet aux ordinateurs de analyser des données, d'identifier des modèles et de tirer des conclusions basées sur ces données, tout en se réévaluant et se perfectionnant dans le temps.\n\n**Types de machine learning :**\n\n1. **Apprentissage supervisé** (Supervised Learning) : les algorithmes apprennent à prédire ou à classifier des données en fonction d'une base de données étiquetée (c'est-à-dire avec un label ou une catégorie).\n2. **Apprentissage non supervisé** (Unsupervised Learning) : les algorithmes découvrent des modèles et des structures dans les données sans aucun label ou étiquette.\n3. **Apprentissage par renforcement** (Reinforcement Learning) : les algorithmes apprennent à prendre des décisions en fonction de récompenses ou de pénalités associées à ces décisions.\n\n**Applications du machine learning :**\n\n1. **Image et reconnaissance visuelle**\n2. **Natural Language Processing (NLP)** (traitement du langage naturel)\n3. **Réseau de neurones**\n4. **Recommendation systems** (systèmes de recommandation)\n5. **Sécurité et surveillance**\n\nLe machine learning est un domaine en constante évolution, avec de nouvelles applications et algorithmes émergent régulièrement.\n\nAvez-vous des questions spécifiques sur le machine learning ?",
+      "ts": 1777618886107
+    }
+  ]
+}

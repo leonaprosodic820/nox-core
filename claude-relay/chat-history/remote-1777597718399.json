@@ -1,0 +1,18 @@
+{
+  "sessionId": "remote-1777597718399",
+  "mode": "remote",
+  "updatedAt": "2026-05-01T01:09:02.486Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Ça vas ?",
+      "ts": 1777597736089
+    },
+    {
+      "role": "assistant",
+      "content": "Nickel, merci. Tout tourne bien sur le Mac. Qu'est-ce que je peux faire pour toi ?",
+      "ts": 1777597742486
+    }
+  ]
+}

@@ -1,0 +1,28 @@
+{
+  "sessionId": "r",
+  "mode": "r",
+  "updatedAt": "2026-04-30T17:40:54.349Z",
+  "messageCount": 4,
+  "messages": [
+    {
+      "role": "user",
+      "content": "p",
+      "ts": 1777569379744
+    },
+    {
+      "role": "assistant",
+      "content": "**PROMETHEUS v7.2** — en ligne.\n\nQu'est-ce qu'il te faut ?",
+      "ts": 1777569387325
+    },
+    {
+      "role": "user",
+      "content": "p",
+      "ts": 1777570846949
+    },
+    {
+      "role": "assistant",
+      "content": "**PROMETHEUS v7.2** — en ligne.\n\nQu'est-ce qu'il te faut ?",
+      "ts": 1777570854349
+    }
+  ]
+}

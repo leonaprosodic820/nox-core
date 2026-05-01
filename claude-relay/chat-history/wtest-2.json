@@ -1,0 +1,18 @@
+{
+  "sessionId": "wtest-2",
+  "mode": "wtest",
+  "updatedAt": "2026-04-30T18:29:31.711Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Prix du Bitcoin en ce moment",
+      "ts": 1777573762367
+    },
+    {
+      "role": "assistant",
+      "content": "**Bitcoin (BTC) — $76,298**\n\n| Métrique | Valeur |\n|---|---|\n| **24h** | +1.56% |\n| **7j** | -2.32% |\n| **1h** | +0.27% |\n| **ATH** | $126,080 (6 oct. 2025) |\n| **Market Cap** | $1,528B |\n| **Volume 24h** | $34.6B |\n| **Supply** | 20.02M / 21M |\n\nBTC à **-39.5%** de son ATH. Phase de correction depuis octobre dernier.",
+      "ts": 1777573771711
+    }
+  ]
+}

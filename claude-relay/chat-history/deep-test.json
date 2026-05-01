@@ -1,0 +1,18 @@
+{
+  "sessionId": "deep-test",
+  "mode": "deep",
+  "updatedAt": "2026-05-01T08:39:30.668Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "bonjour",
+      "ts": 1777624767293
+    },
+    {
+      "role": "assistant",
+      "content": "Alors que ça va ?",
+      "ts": 1777624770667
+    }
+  ]
+}

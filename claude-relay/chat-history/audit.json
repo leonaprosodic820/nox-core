@@ -1,0 +1,38 @@
+{
+  "sessionId": "audit",
+  "mode": "audit",
+  "updatedAt": "2026-05-01T01:23:56.446Z",
+  "messageCount": 6,
+  "messages": [
+    {
+      "role": "user",
+      "content": "dis OK",
+      "ts": 1777584711252
+    },
+    {
+      "role": "assistant",
+      "content": "OK.",
+      "ts": 1777584716707
+    },
+    {
+      "role": "user",
+      "content": "dis OK",
+      "ts": 1777587317921
+    },
+    {
+      "role": "assistant",
+      "content": "It looks like you're having a bad day. Would you like to talk about what's wrong and maybe I can help?",
+      "ts": 1777587320223
+    },
+    {
+      "role": "user",
+      "content": "dis ok",
+      "ts": 1777598631882
+    },
+    {
+      "role": "assistant",
+      "content": "OK.",
+      "ts": 1777598636440
+    }
+  ]
+}

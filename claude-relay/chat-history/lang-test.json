@@ -1,0 +1,18 @@
+{
+  "sessionId": "lang-test",
+  "mode": "lang",
+  "updatedAt": "2026-05-01T09:02:45.458Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "give me the weather in Paris",
+      "ts": 1777626142458
+    },
+    {
+      "role": "assistant",
+      "content": "**Météo à Paris actuellement :**\n\n- ☀️ **Ensoleillé** — 14°C (ressenti 14°C)\n- 💧 Humidité : 47%\n- 💨 Vent : 10 km/h\n\nBelle journée à Paris, temps clair et agréable !",
+      "ts": 1777626165458
+    }
+  ]
+}

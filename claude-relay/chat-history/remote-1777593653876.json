@@ -1,0 +1,28 @@
+{
+  "sessionId": "remote-1777593653876",
+  "mode": "remote",
+  "updatedAt": "2026-05-01T00:03:26.614Z",
+  "messageCount": 4,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Bonjour comment vas tu ?",
+      "ts": 1777593686622
+    },
+    {
+      "role": "assistant",
+      "content": "Salut ! Tout roule, systèmes opérationnels, prêt à bosser.\n\nQu'est-ce qu'on fait aujourd'hui ?",
+      "ts": 1777593693001
+    },
+    {
+      "role": "user",
+      "content": "Combien de tokens ont été utilisés aujourd'hui ?",
+      "ts": 1777593796666
+    },
+    {
+      "role": "assistant",
+      "content": "Je n'ai pas accès à un compteur de tokens global pour ta journée. Ce que je peux faire :\n\n**Session actuelle** : on vient de démarrer, donc quasi rien (~2-3K tokens avec le contexte système).\n\n**Pour l'historique du jour**, tu peux vérifier via :\n\n```bash\n# Logs Claude Code du jour\nls -la ~/.claude/logs/\n```\n\nTu veux que je regarde les logs disponibles ?",
+      "ts": 1777593806613
+    }
+  ]
+}

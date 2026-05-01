@@ -1,0 +1,18 @@
+{
+  "sessionId": "local-mission",
+  "mode": "local",
+  "updatedAt": "2026-04-30T17:11:21.414Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Test mission",
+      "ts": 1777569007465
+    },
+    {
+      "role": "assistant",
+      "content": "Mission completee en 39.358s",
+      "ts": 1777569081414
+    }
+  ]
+}

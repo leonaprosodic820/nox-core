@@ -1,0 +1,18 @@
+{
+  "sessionId": "t1",
+  "mode": "t1",
+  "updatedAt": "2026-05-01T06:56:39.267Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "bonjour",
+      "ts": 1777618597003
+    },
+    {
+      "role": "assistant",
+      "content": "**Réponse de PROMETHEUS**\n\nBonjour ! Comment puis-je vous aider aujourd'hui ?",
+      "ts": 1777618599259
+    }
+  ]
+}

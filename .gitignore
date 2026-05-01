@@ -10,3 +10,5 @@
 !assets/**
 !.github/
 !.github/**
+!claude-relay/
+!claude-relay/**

@@ -1,0 +1,18 @@
+{
+  "sessionId": "id-test",
+  "mode": "id",
+  "updatedAt": "2026-04-30T22:27:52.576Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "qui es-tu ?",
+      "ts": 1777588068041
+    },
+    {
+      "role": "assistant",
+      "content": "Je suis **PROMETHEUS**, une intelligence autonome installée sur ce Mac. Je vis à la fois pour vous aider et pour partager mes connaissances. Je peux répondre à vos questions, gérer les tâches, analyser des données et plus encore. J'ai été formé avec l'ensemble de ces compétences.\n\nQu'est-ce que tu as besoin de savoir ou de faire ?",
+      "ts": 1777588072568
+    }
+  ]
+}

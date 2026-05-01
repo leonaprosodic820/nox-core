@@ -1,0 +1,18 @@
+{
+  "sessionId": "debug-1",
+  "mode": "debug",
+  "updatedAt": "2026-04-30T18:29:56.491Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Bonjour",
+      "ts": 1777573787895
+    },
+    {
+      "role": "assistant",
+      "content": "Bonjour. Quoi de neuf aujourd'hui ?",
+      "ts": 1777573796491
+    }
+  ]
+}

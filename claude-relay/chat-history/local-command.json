@@ -1,0 +1,38 @@
+{
+  "sessionId": "local-command",
+  "mode": "local",
+  "updatedAt": "2026-04-30T17:40:46.827Z",
+  "messageCount": 6,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Test command",
+      "ts": 1777569007446
+    },
+    {
+      "role": "assistant",
+      "content": "Erreur: Order not recognized. Available: screenshot, camera, status, lock, clipboard, open [url], run [command]",
+      "ts": 1777569007449
+    },
+    {
+      "role": "user",
+      "content": "echo T22",
+      "ts": 1777569379590
+    },
+    {
+      "role": "assistant",
+      "content": "Erreur: Order not recognized. Available: screenshot, camera, status, lock, clipboard, open [url], run [command]",
+      "ts": 1777569379592
+    },
+    {
+      "role": "user",
+      "content": "echo T22",
+      "ts": 1777570846825
+    },
+    {
+      "role": "assistant",
+      "content": "Erreur: Order not recognized. Available: screenshot, camera, status, lock, clipboard, open [url], run [command]",
+      "ts": 1777570846827
+    }
+  ]
+}

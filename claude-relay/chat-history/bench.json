@@ -1,0 +1,38 @@
+{
+  "sessionId": "bench",
+  "mode": "bench",
+  "updatedAt": "2026-05-01T07:13:18.930Z",
+  "messageCount": 6,
+  "messages": [
+    {
+      "role": "user",
+      "content": "bonjour",
+      "ts": 1777619564075
+    },
+    {
+      "role": "assistant",
+      "content": "Bienvenue ! Comment puis-je t'aider aujourd'hui ?",
+      "ts": 1777619569106
+    },
+    {
+      "role": "user",
+      "content": "crée un script Python pour lister mes fichiers",
+      "ts": 1777619569226
+    },
+    {
+      "role": "assistant",
+      "content": "Voici un script simple et efficace :\n\n```python\n#!/usr/bin/env python3\nimport os\nimport sys\nfrom pathlib import Path\nfrom datetime import datetime\n\n\ndef list_files(directory=\".\"):\n    path = Path(directory).resolve()\n    if not path.is_dir():\n        print(f\"Erreur: '{directory}' n'est pas un dossier valide\")\n        sys.exit(1)\n\n    print(f\"📂 {path}\\n\")\n    print(f\"{'Type':<6} {'Taille':<12} {'Modifié':<20} {'Nom'}\")\n    print(\"-\" * 70)\n\n    entries = sorted(path.iterdir(), key=lambda e: (e.is_file(), e.name.lower()))\n\n    for entry in entries:\n        try:\n            stat = entry.stat()\n            modified = datetime.fromtimestamp(stat.st_mtime).strftime(\"%Y-%m-%d %H:%M\")\n            if entry.is_dir():\n                print(f\"{'DIR':<6} {'':<12} {modified:<20} {entry.name}/\")\n            else:\n                size = format_size(stat.st_size)\n                print(f\"{'FILE':<6} {size:<12} {modified:<20} {entry.name}\")\n        except PermissionError:\n            print(f\"{'?':<6} {'?':<12} {'?':<20} {entry.name} [accès refusé]\")\n\n    print(f\"\\n{len(entries)} éléments\")\n\n\ndef format_size(size):\n    for unit in (\"o\", \"Ko\", \"Mo\", \"Go\", \"To\"):\n        if size < 1024:\n            return f\"{size:.1f} {unit}\"\n        size /= 1024\n    return f\"{size:.1f} Po\"\n\n\nif __name__ == \"__main__\":\n    target = sys.argv[1] if len(sys.argv) > 1 else \".\"\n    list_files(target)\n```\n\n**Usage :**\n- `python list_files.py` → liste le dossier courant\n- `python list_files.py /chemin/vers/dossier` → liste un dossier spécifique\n\nAffiche le type, la taille formatée, la date de modification et le nom. Dossiers en premier, triés alphabétiquement. Tu veux que je le crée dans ton projet ?",
+      "ts": 1777619585275
+    },
+    {
+      "role": "user",
+      "content": "prix bitcoin",
+      "ts": 1777619585359
+    },
+    {
+      "role": "assistant",
+      "content": "**Bitcoin (BTC): $77,034**\n\n- **24h:** +1.67%\n- **7j:** -1.22%\n- **ATH:** $126,080 (6 oct 2025) — actuellement -38.9% sous l'ATH\n- **Market cap:** $1.54T\n- **Volume 24h:** $29.9B\n\nLe BTC consolide dans les $77k après une correction significative depuis l'ATH d'octobre. Zone de support importante, volume correct mais pas exceptionnel.",
+      "ts": 1777619598930
+    }
+  ]
+}

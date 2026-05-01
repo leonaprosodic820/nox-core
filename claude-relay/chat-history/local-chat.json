@@ -1,0 +1,68 @@
+{
+  "sessionId": "local-chat",
+  "mode": "local",
+  "updatedAt": "2026-04-30T17:40:46.803Z",
+  "messageCount": 12,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Test persistance",
+      "ts": 1777568989375
+    },
+    {
+      "role": "assistant",
+      "content": "**Persistance confirmée.** Je suis actif sur ce Mac, mémoire chargée.\n\nQuick check :\n- **34 mémoires** indexées dans MEMORY.md\n- **ShadowVault v5.5**, NoxCore, Citadel Casino, OPSEC stack — tout en contexte\n- Règles critiques : OPSEC RAMDisk, jamais DNS/réseau, jamais sudo dangereux\n\nPrêt à opérer.",
+      "ts": 1777569000131
+    },
+    {
+      "role": "user",
+      "content": "Test chat",
+      "ts": 1777569001207
+    },
+    {
+      "role": "assistant",
+      "content": "**Chat opérationnel.** Prêt.",
+      "ts": 1777569007428
+    },
+    {
+      "role": "user",
+      "content": "OK",
+      "ts": 1777569372771
+    },
+    {
+      "role": "assistant",
+      "content": "OK. Prêt.",
+      "ts": 1777569379565
+    },
+    {
+      "role": "user",
+      "content": "Quelle est la météo à Paris maintenant ?",
+      "ts": 1777569992971
+    },
+    {
+      "role": "assistant",
+      "content": "**Météo Paris** — la requête a échoué (erreur de parsing JSON côté source).\n\nJe peux retenter via un autre moyen. Tu veux que je fetch directement wttr.in ?",
+      "ts": 1777570002045
+    },
+    {
+      "role": "user",
+      "content": "Quel est le prix du bitcoin en ce moment ?",
+      "ts": 1777570017962
+    },
+    {
+      "role": "assistant",
+      "content": "**Bitcoin** : **64 886 €** (−0.06% / 24h)\n\nMarché stable, légère correction.",
+      "ts": 1777570026093
+    },
+    {
+      "role": "user",
+      "content": "OK",
+      "ts": 1777570840992
+    },
+    {
+      "role": "assistant",
+      "content": "OK. Prêt.",
+      "ts": 1777570846802
+    }
+  ]
+}

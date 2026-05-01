@@ -1,0 +1,18 @@
+{
+  "sessionId": "wtest-final",
+  "mode": "wtest",
+  "updatedAt": "2026-04-30T18:30:45.894Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Quel temps fait-il à Paris ?",
+      "ts": 1777573806877
+    },
+    {
+      "role": "assistant",
+      "content": "## Météo Paris — 30 avril 2026, 20h00\n\n| | |\n|---|---|\n| **Actuellement** | **22°C** (ressenti 24°C) |\n| **Conditions** | ☀️ Ensoleillé, ciel dégagé |\n| **Humidité** | 29% |\n| **Vent** | 19 km/h Est |\n| **Pression** | 1018 hPa |\n| **Visibilité** | 10 km |\n| **Aujourd'hui** | **10°C → 21°C** |\n| **Soleil** | 06h32 → 21h05 |\n\n### Demain — 1er mai\n\n**10°C → 25°C** — Beau temps dominant avec possibilité de pluie éparse. Journée plus chaude qu'aujourd'hui (+4°C au max).\n\nBelle soirée à Paris, il fait encore très doux pour un 30 avril.",
+      "ts": 1777573845894
+    }
+  ]
+}

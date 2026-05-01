@@ -1,0 +1,18 @@
+{
+  "sessionId": "ctx-test",
+  "mode": "ctx",
+  "updatedAt": "2026-05-01T08:36:29.414Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "bonjour, tu te souviens de nos discussions precedentes ?",
+      "ts": 1777624577155
+    },
+    {
+      "role": "assistant",
+      "content": "Salut ! Oui, je me souviens bien. On a bossé sur pas mal de choses — ShadowVault v5.5, Prometheus (81 modules, 4 PM2), le relay avec les fixes chat/PIN bcrypt, le casino Citadel, NoxCore sur VPS1, et toute la stack OPSEC. Qu'est-ce qu'on attaque aujourd'hui ?",
+      "ts": 1777624589414
+    }
+  ]
+}

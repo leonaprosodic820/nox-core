@@ -1,0 +1,18 @@
+{
+  "sessionId": "wtest-1",
+  "mode": "wtest",
+  "updatedAt": "2026-04-30T18:29:22.217Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Météo Paris maintenant",
+      "ts": 1777573751121
+    },
+    {
+      "role": "assistant",
+      "content": "## Paris — 22°C ☀️\n\n| | |\n|---|---|\n| **Ressenti** | 24°C |\n| **Humidité** | 29% |\n| **Vent** | 19 km/h Est |\n| **Pression** | 1018 hPa |\n| **Visibilité** | 10 km |\n| **Couverture nuageuse** | 0% |\n\n### Prévisions\n\n| Jour | Temps | Min / Max |\n|---|---|---|\n| **Aujourd'hui** | ☀️ Sunny | 10° / 21° |\n| **Vendredi 1er mai** | ☀️ Sunny | 10° / **25°** |\n| **Samedi 2 mai** | ☀️ Sunny | 14° / **25°** |\n\nGrand soleil sur Paris, 0 mm de pluie prévu sur 3 jours. Demain et samedi montent à **25°C** — parfait pour le pont du 1er mai.",
+      "ts": 1777573762217
+    }
+  ]
+}

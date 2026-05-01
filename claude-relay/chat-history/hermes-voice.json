@@ -1,0 +1,68 @@
+{
+  "sessionId": "hermes-voice",
+  "mode": "hermes",
+  "updatedAt": "2026-05-01T14:37:48.313Z",
+  "messageCount": 12,
+  "messages": [
+    {
+      "role": "user",
+      "content": "Comment vas-tu ?",
+      "ts": 1777584137623
+    },
+    {
+      "role": "assistant",
+      "content": "Opérationnel à 100%. Tous les systèmes chargés, mémoire active, outils prêts.\n\nEt toi, quoi de prévu aujourd'hui ?",
+      "ts": 1777584143948
+    },
+    {
+      "role": "user",
+      "content": "Donc là, tu peux me comprendre.",
+      "ts": 1777584261625
+    },
+    {
+      "role": "assistant",
+      "content": "Oui, parfaitement. Je te lis, je te comprends, et je suis prêt à agir.\n\nQu'est-ce qu'on fait ?",
+      "ts": 1777584268271
+    },
+    {
+      "role": "user",
+      "content": "Bonjour Hermès, comment vas-tu ?",
+      "ts": 1777584890346
+    },
+    {
+      "role": "assistant",
+      "content": "Opérationnel à 100%. Tous systèmes chargés, mémoire active, 30 projets indexés.\n\nQu'est-ce qu'on fait aujourd'hui ?",
+      "ts": 1777584899654
+    },
+    {
+      "role": "user",
+      "content": "Comment vas-tu ?",
+      "ts": 1777587334279
+    },
+    {
+      "role": "assistant",
+      "content": "Bonjour ! Je vais bien, merci pour la question. Je suis un modèle de langage artificiel, donc je n'expérimente pas les émotions ou les sentiments physiques comme les humains. Cependant, j'ai été conçu pour être utile et à votre disposition pour répondre à vos questions et vous aider dans vos besoins.\n\n Comment puis-je vous aider aujourd'hui ?",
+      "ts": 1777587340583
+    },
+    {
+      "role": "user",
+      "content": "Donc là tu me comprends et tu peux absolument tout faire ce que je te demande. Que ce soit sur mon Mac, une recherche internet ou peu importe. On est d'accord.",
+      "ts": 1777587676228
+    },
+    {
+      "role": "assistant",
+      "content": "D'accord, je suis prêt à aider ! Je peux effectuer des recherches sur Internet, donner des conseils et même exécuter des tâches sur votre Mac si nécessaire. N'hésitez pas à me poser vos questions ou à me demander de l'aide pour quoi que ce soit. Que vous ayez besoin d'information, de conseils ou de mise en œuvre, je suis là pour vous aider !\n\nQu'est-ce que vous souhaitez faire ou de quel sujet voulez-vous commencer ?",
+      "ts": 1777587684050
+    },
+    {
+      "role": "user",
+      "content": "Bonjour, commun vacu.",
+      "ts": 1777646254294
+    },
+    {
+      "role": "assistant",
+      "content": "Salut ! Ça va tranquille ici, prêt à bosser. Qu'est-ce que je peux faire pour toi aujourd'hui ?",
+      "ts": 1777646268313
+    }
+  ]
+}

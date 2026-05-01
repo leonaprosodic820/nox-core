@@ -1,0 +1,18 @@
+{
+  "sessionId": "audit1",
+  "mode": "audit1",
+  "updatedAt": "2026-05-01T07:20:46.982Z",
+  "messageCount": 2,
+  "messages": [
+    {
+      "role": "user",
+      "content": "bonjour",
+      "ts": 1777620041822
+    },
+    {
+      "role": "assistant",
+      "content": "Alors que tu es là, as-tu besoin d'aide ou veux-tu simplement discuter ?",
+      "ts": 1777620046982
+    }
+  ]
+}
