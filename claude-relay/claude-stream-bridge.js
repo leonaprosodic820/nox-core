@@ -18,7 +18,8 @@ function callStreaming(prompt, opts = {}) {
     const args = ['-p', '--output-format', 'text'];
     if (model) args.push('--model', model);
 
-    const claude = spawn('claude', args, {
+    const claudePath = process.env.CLAUDE_PATH || '/usr/local/bin/claude';
+    const claude = spawn(claudePath, args, {
       stdio: ['pipe', 'pipe', 'pipe'],
       env: { ...process.env },
     });

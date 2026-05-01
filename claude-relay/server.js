@@ -1498,18 +1498,27 @@ app.post('/prometheus/stream', async (req, res) => {
     const built  = promptEngine.buildPrompt(message, history.slice(-8), allCtx);
 
     send({ type: 'action', text: 'Rédaction en cours...' });
+    console.log('[Stream] built.type:', built.type, 'built.model:', built.model, 'msg:', message.slice(0,30));
 
     let fullResponse = '';
-    await streamBridge.callStreaming(message, {
-      systemPrompt: built.prompt,
-      maxTokens: built.maxTokens || 4000,
-      model: 'claude-sonnet-4-6',
-      onToken: (text) => {
-        fullResponse += text;
-        send({ type: 'token', text });
-      },
-      onError: (err) => send({ type: 'action', text: '⚠ ' + err }),
+    const isTrivialOrLlama = (built.model === 'llama') ||
+      (built.type === 'chat' && message.trim().split(/\s+/).length <= 3 &&
+       /^(bonjour|salut|hey|coucou|hello|hi|ok|oui|non|merci|thanks|bien|super|parfait|top|ca va|yo|bonsoir|cool|yes|no)$/i.test(message.trim()));
+
+    // Appel interne au chat endpoint pour réutiliser tout le routing
+    const http = require('http');
+    const chatResp = await new Promise((resolve, reject) => {
+      const body = JSON.stringify({ message, sessionId, mode });
+      const req2 = http.request({ hostname: 'localhost', port: 7777, path: '/prometheus/chat', method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Content-Length': Buffer.byteLength(body) }, timeout: 600000 },
+        res2 => { let data = ''; res2.on('data', c => data += c); res2.on('end', () => { try { resolve(JSON.parse(data)); } catch(e) { reject(e); } }); });
+      req2.on('error', reject);
+      req2.on('timeout', () => { req2.destroy(); reject(new Error('timeout')); });
+      req2.write(body); req2.end();
     });
+    fullResponse = chatResp.response || chatResp.error || '';
+    const words = fullResponse.split(/(?<=\s)/);
+    for (const w of words) { send({ type: 'token', text: w }); }
 
     history.push({ role: 'assistant', content: fullResponse, ts: Date.now() });
     saveChatSession(sessionId, history);
