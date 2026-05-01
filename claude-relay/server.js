@@ -1718,7 +1718,7 @@ async function handleStreamChat(req, res, message, sessionId, mode) {
   try {
     if (webIntel) {
       const intent = webIntel.detectIntent(message);
-      if (intent !== 'search' || /météo|sport|news|bitcoin|bourse|film|heure|recette/i.test(message)) {
+      if (intent === 'search' || /météo|sport|news|bitcoin|bourse|crypto|actualit|classement|prix/i.test(message)) {
         send('webfetch', { intent, status: 'fetching' });
         const wr = await webIntel.smartSearch(message, { intent });
         if (wr.data && !wr.error) { webContext = webIntel.formatForAI(wr); send('webdata', { intent, ready: true }); }
