@@ -75,6 +75,10 @@ const cogModule = require('./cognitive-module');
 const sseStreamMgr = require('./sse-stream-manager');
 const cogMissionRunner = require('./mission-runner');
 const { analyze: cogAnalyze } = require('./analyze-module');
+const proactiveAlerts = require('./proactive-alerts');
+const longTermMemory  = require('./long-term-memory');
+const { AgentOrchestrator } = require('./specialized-agents');
+const pushNotif = require('./push-notifications');
 const totpAuth = require('./totp-auth');
 const projMemory = require('./project-memory');
 const analytics = require('./analytics-tracker');
@@ -1320,6 +1324,21 @@ app.post('/doc/upload', localOrAuth, docUpload.single('document'), (req, res) =>
   res.json({ success: true, path: final, name: req.file.originalname });
 });
 
+
+// ── ROUTES AUTONOMES ──
+app.get('/sw-push.js', (req, res) => { res.setHeader('Service-Worker-Allowed', '/'); res.setHeader('Content-Type', 'application/javascript'); res.sendFile(__dirname + '/public/sw-push.js'); });
+app.get('/push/vapid-key', (req, res) => { res.json({ publicKey: pushNotif.getVapidPublicKey() }); });
+app.post('/push/subscribe', requireRemoteAuth, (req, res) => { res.json(pushNotif.addSubscription(req.body)); });
+app.post('/push/test', requireRemoteAuth, async (req, res) => { res.json(await pushNotif.sendPush('PROMETHEUS', 'Notification test')); });
+app.get('/alerts/log', localOrAuth, (req, res) => { res.json({ alerts: proactiveAlerts.getLog(50) }); });
+app.post('/alerts/check/:ruleId', localOrAuth, async (req, res) => { res.json(await proactiveAlerts.runCheck(req.params.ruleId)); });
+app.get('/alerts/rules', localOrAuth, (req, res) => { res.json({ rules: proactiveAlerts.ALERT_RULES.map(r => ({ id: r.id, name: r.name, severity: r.severity, interval: r.interval })) }); });
+app.get('/ltm/stats', (req, res) => { res.json(longTermMemory.getStats()); });
+app.get('/ltm/context', (req, res) => { res.json({ context: longTermMemory.buildLTMContext() }); });
+app.post('/ltm/weekly', requireRemoteAuth, async (req, res) => { const d = await longTermMemory.generateWeeklySummary(); res.json(d || { error: 'Génération échouée' }); });
+app.get('/agents/status', localOrAuth, (req, res) => { res.json({ agents: AgentOrchestrator.getStatus() }); });
+app.post('/agents/run/:name', requireRemoteAuth, async (req, res) => { res.json(await AgentOrchestrator.runAgent(req.params.name)); });
+
 // ── PROMETHEUS STREAMING SSE ──
 app.post('/prometheus/stream', async (req, res) => {
   const { message, sessionId = 'prometheus-shadowroot', mode = 'chat' } = req.body;
@@ -1566,6 +1585,7 @@ app.post('/prometheus/chat', async (req, res) => {
     setImmediate(() => {
       try { require('./session-context').updateProfile(message, response).catch(() => {}); } catch {}
       try { cogModule.learn(message, response); } catch(e) {}
+        try { longTermMemory.extractAndStore(message, response); } catch(e) {}
     });
     clearTimeout(chatTimer);
     if (!res.headersSent) res.json({ response, sessionId, messageCount: history.length, mode, routedTo: _routedTo });

@@ -378,6 +378,49 @@ bot.onText(/\/voicemode/, async (msg) => {
 });
 
 // ── Messages libres ──
+
+// ── AGENTS, ALERTES, WEEKLY ──
+bot.onText(/\/agents/, async (msg) => {
+  if (!auth(msg)) return deny(msg.chat.id);
+  await bot.sendChatAction(msg.chat.id, 'typing');
+  try {
+    const data = await api('/agents/status');
+    const txt = (data.agents || []).map(a => (a.running ? '🔄' : '✅') + ' ' + a.name + (a.lastRun ? ' — ' + new Date(a.lastRun).toLocaleTimeString('fr-FR') : ' — jamais')).join('\n');
+    await bot.sendMessage(msg.chat.id, '*⚡ Agents autonomes*\n\n' + txt, { parse_mode: 'Markdown' });
+  } catch(e) { await bot.sendMessage(msg.chat.id, '❌ ' + e.message); }
+});
+
+bot.onText(/\/alerts/, async (msg) => {
+  if (!auth(msg)) return deny(msg.chat.id);
+  try {
+    const data = await api('/alerts/log');
+    const alerts = (data.alerts || []).slice(0, 5);
+    if (!alerts.length) { await bot.sendMessage(msg.chat.id, '✅ Aucune alerte récente'); return; }
+    const txt = alerts.map(a => a.ruleId + ': ' + a.message.slice(0, 80)).join('\n\n');
+    await bot.sendMessage(msg.chat.id, '*🔔 Alertes récentes*\n\n' + txt, { parse_mode: 'Markdown' });
+  } catch(e) { await bot.sendMessage(msg.chat.id, '❌ ' + e.message); }
+});
+
+bot.onText(/\/weekly/, async (msg) => {
+  if (!auth(msg)) return deny(msg.chat.id);
+  await bot.sendMessage(msg.chat.id, '⏳ Génération du résumé...');
+  try {
+    const data = await api('/ltm/weekly', 'POST', {});
+    if (data.error) { await bot.sendMessage(msg.chat.id, '❌ ' + data.error); return; }
+    await bot.sendMessage(msg.chat.id, '*📊 Résumé hebdomadaire*\n\n' + (data.summary || '') + '\n\n*Projets:* ' + (data.topProjects || []).join(', ') + '\n*Suggestions:* ' + (data.nextWeekSuggestions || []).slice(0, 2).join(', '), { parse_mode: 'Markdown' });
+  } catch(e) { await bot.sendMessage(msg.chat.id, '❌ ' + e.message); }
+});
+
+global.sendHermesAlert = async (type, name, message) => {
+  try {
+    const cfg = require('./config.json');
+    const chatId = cfg.telegram?.chatId;
+    if (!chatId) return;
+    await bot.sendMessage(chatId, message, { parse_mode: 'Markdown' });
+  } catch(e) { console.error('[HERMES Alert]', e.message); }
+};
+
+
 bot.on('message', async (msg) => {
   if (!auth(msg)) return; if (msg.text?.startsWith('/')) return;
   const chatId = msg.chat.id;
