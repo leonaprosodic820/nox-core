@@ -1412,9 +1412,12 @@ app.post('/prometheus/chat', async (req, res) => {
       const promptEngine = require('./prompt-engine');
       const sessionCtx = require('./session-context');
 const cogProfile = require('./cognitive-profile');
+const existEngine = require('./existential-engine');
       // Profil cognitif
       cogProfile.analyzeMessage(message);
       const profileCtx = cogProfile.buildContextString();
+      const isExistential = /qui es.tu|nature|ressens|conscience|existentiel/i.test(message);
+      const existCtx = isExistential ? existEngine.getExistentialContext() : '';
       const crossCtx = sessionCtx.buildCrossSessionContext(sessionId);
       const recentCtx = sessionCtx.getRecentSessionsSummary(sessionId, 2);
       const cached = promptEngine.getCached(message);
