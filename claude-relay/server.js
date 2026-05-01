@@ -1705,15 +1705,18 @@ app.post('/prometheus/chat', async (req, res) => {
     });
     saveChatSession(sessionId, history);
     if (history.length > 20) history.splice(0, history.length - 20);
+    const _endTime = Date.now();
+    const _promptType = typeof built !== 'undefined' ? built?.type : 'unknown';
+    const _duration = _endTime - _startTime;
     setImmediate(() => {
-      try { require('./session-context').updateProfile(message, response).catch(() => {}); } catch {}
-      try { cogModule.learn(message, response); } catch(e) {}
+      try { require('./session-context').updateProfile(message, response).catch(() => {}); } catch(e) {}
+      try { cogModule.learn(message, response); } catch(e) { console.error('[Learn]', e.message); }
       try { longTermMemory.extractAndStore(message, response); } catch(e) {}
       try {
-          const quality = selfImproveModule.analyzeResponseQuality(message, response);
-          rlModule.learn(message, built?.type, _routedTo || 'claude', quality, Date.now() - _startTime);
-        } catch(e) {}
-        try { selfImproveModule.recordResponse(message, response, { promptType: built?.type, routedTo: _routedTo, duration: Date.now() - _startTime }); } catch(e) {}
+        const quality = selfImproveModule.analyzeResponseQuality(message, response);
+        rlModule.learn(message, _promptType, _routedTo || 'unknown', quality, _duration);
+        selfImproveModule.recordResponse(message, response, { promptType: _promptType, routedTo: _routedTo, duration: _duration });
+      } catch(e) { console.error('[Feedback]', e.message); }
     });
     clearTimeout(chatTimer);
     if (!res.headersSent) res.json({ response, sessionId, messageCount: history.length, mode, routedTo: _routedTo });
