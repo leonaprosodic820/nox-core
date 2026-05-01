@@ -12,7 +12,22 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<script>if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(r=>r.forEach(s=>s.unregister()));caches.keys().then(k=>k.forEach(c=>caches.delete(c)))}
+<script>
+
+// Timeout global 10 minutes pour tous les fetch PROMETHEUS
+(function(){
+  const _origFetch = window.fetch;
+  window.fetch = function(url, opts) {
+    opts = opts || {};
+    if (!opts.signal && typeof url === 'string' && (url.includes('/prometheus/') || url.includes('/vision/') || url.includes('/doc/'))) {
+      const ctrl = new AbortController();
+      setTimeout(() => ctrl.abort(), 600000);
+      opts.signal = ctrl.signal;
+    }
+    return _origFetch.call(this, url, opts);
+  };
+})();
+if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(r=>r.forEach(s=>s.unregister()));caches.keys().then(k=>k.forEach(c=>caches.delete(c)))}
 window.addEventListener('DOMContentLoaded', () => {
   const savedMode = localStorage.getItem('wpa-current-mode') || 'chat';
   chatMode = savedMode;
@@ -1315,7 +1330,7 @@ async function loadModeHistory(mode) {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     const data = await resp.json();
-    const context = data.context || [];
+    const context = data.context || data.history || [];
     if (!context.length) { showWelcome(); return; }
     context.forEach(m => {
       if (m.role === 'user') addMsg('user', m.content);
