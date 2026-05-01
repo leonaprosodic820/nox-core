@@ -182,7 +182,7 @@ async function executeStep(mission, step, previousResults) {
 
   const bridge = require('./claude-api-bridge');
   const context = previousResults.slice(-5).map(r => `[Etape ${r.stepId}] ${r.summary}`).join('\n');
-  const prompt = `MISSION PROMETHEUS — ETAPE ${step.id}/${mission.steps.length}
+  const prompt = `MISSION PROMETHEUS — ETAPE ${step.id}/${mission?.steps.length}
 Objectif: "${mission.objective}"
 Historique: ${context || 'Premiere etape'}
 Titre: ${step.title} | Type: ${step.type}
@@ -232,14 +232,14 @@ async function runMission(mission, notifyFn) {
   };
 
   try {
-    for (let i = 0; i < mission.steps.length; i++) {
+    for (let i = 0; i < mission?.steps.length; i++) {
       if (mission.killSwitch) break;
       await mission.waitIfPaused();
       if (mission.killSwitch) break;
 
-      const step = mission.steps[i];
+      const step = mission?.steps[i];
       mission.currentStep = i + 1;
-      notify('STEP_START', { step: i + 1, total: mission.steps.length, title: step.title, type: step.type, icon: STEP_TYPES[step.type] || '⚡' });
+      notify('STEP_START', { step: i + 1, total: mission?.steps.length, title: step.title, type: step.type, icon: STEP_TYPES[step.type] || '⚡' });
 
       let retries = 0, stepSuccess = false, stepResult = null, verification = null;
       while (retries <= LIMITS.MAX_RETRIES_PER_STEP && !stepSuccess) {
@@ -261,10 +261,10 @@ async function runMission(mission, notifyFn) {
       if (!stepSuccess || mission.killSwitch) break;
 
       mission.results.push({ stepId: i + 1, title: step.title, type: step.type, output: stepResult?.output?.slice(0, 800) || '', summary: verification?.summary || '', confidence: verification?.confidence || 0, quality: verification?.outputQuality || 'unknown', retries });
-      notify('STEP_COMPLETE', { step: i + 1, total: mission.steps.length, title: step.title, summary: verification.summary, confidence: verification.confidence, tokensUsed: mission.tokensUsed, progress: Math.round(((i + 1) / mission.steps.length) * 100) });
+      notify('STEP_COMPLETE', { step: i + 1, total: mission?.steps.length, title: step.title, summary: verification.summary, confidence: verification.confidence, tokensUsed: mission.tokensUsed, progress: Math.round(((i + 1) / mission?.steps.length) * 100) });
 
-      if ((i + 1) % LIMITS.CHECKPOINT_EVERY_N_STEPS === 0 && i + 1 < mission.steps.length) {
-        notify('CHECKPOINT', { step: i + 1, total: mission.steps.length, progress: Math.round(((i + 1) / mission.steps.length) * 100), tokensUsed: mission.tokensUsed });
+      if ((i + 1) % LIMITS.CHECKPOINT_EVERY_N_STEPS === 0 && i + 1 < mission?.steps.length) {
+        notify('CHECKPOINT', { step: i + 1, total: mission?.steps.length, progress: Math.round(((i + 1) / mission?.steps.length) * 100), tokensUsed: mission.tokensUsed });
       }
     }
 

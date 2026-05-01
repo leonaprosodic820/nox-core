@@ -1,39 +1,48 @@
-const os = require('os');
-const USER = os.userInfo().username;
-
 module.exports = {
   apps: [
     {
       name: 'claude-relay',
-      script: 'server.js',
-      cwd: `/Users/${USER}/claude-relay`,
-      watch: false,
+      script: './server.js',
+      cwd: process.env.HOME + '/claude-relay',
       autorestart: true,
-      max_restarts: 999999,
-      restart_delay: 1000,
-      min_uptime: '5s',
-      max_memory_restart: '500M',
-      env: {
-        NODE_ENV: 'production',
-        PORT: 7777,
-        ANTHROPIC_API_KEY: process.env.ANTHROPIC_API_KEY || ''
-      },
+      watch: false,
+      max_memory_restart: '1G',
+      restart_delay: 3000,
+      max_restarts: 10,
+      min_uptime: '10s',
+      env: { NODE_ENV: 'production', PORT: '7777' },
+      error_file: './logs/pm2-error.log',
+      out_file: './logs/pm2-out.log',
       log_date_format: 'YYYY-MM-DD HH:mm:ss',
-      out_file: `/Users/${USER}/claude-relay/logs/pm2-out.log`,
-      error_file: `/Users/${USER}/claude-relay/logs/pm2-error.log`,
-      exp_backoff_restart_delay: 100
+      merge_logs: true,
+    },
+    {
+      name: 'hermes',
+      script: './hermes.js',
+      cwd: process.env.HOME + '/claude-relay',
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '512M',
+      restart_delay: 5000,
+      max_restarts: 10,
+      min_uptime: '10s',
     },
     {
       name: 'cloudflared',
       script: 'cloudflared',
-      interpreter: 'none',
-      args: `tunnel --config /Users/${USER}/.cloudflared/config.yml run claude-relay`,
-      watch: false,
+      args: 'tunnel run prometheus',
       autorestart: true,
-      max_restarts: 999999,
-      restart_delay: 3000,
-      out_file: `/Users/${USER}/claude-relay/logs/cf-out.log`,
-      error_file: `/Users/${USER}/claude-relay/logs/cf-error.log`
-    }
-  ]
+      max_restarts: 20,
+      restart_delay: 2000,
+    },
+    {
+      name: 'chroma-server',
+      script: 'python3',
+      args: '-m chromadb.cli.cli run --host 0.0.0.0 --port 8765',
+      cwd: process.env.HOME + '/claude-relay',
+      autorestart: true,
+      max_restarts: 5,
+      restart_delay: 5000,
+    },
+  ],
 };
