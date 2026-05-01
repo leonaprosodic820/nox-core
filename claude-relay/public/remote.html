@@ -189,6 +189,7 @@ body::after{content:'';position:fixed;inset:0;z-index:1;pointer-events:none;
 #p-claude.on{display:flex!important;flex-direction:column;
   padding:10px 14px 8px;overflow:hidden;height:100%;max-height:calc(100vh - 110px)}
 @keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+@keyframes blink{0%,49%{opacity:1}50%,100%{opacity:0}}
 
 /* ── TAB BAR ── */
 .tbar{display:flex;padding:6px 4px calc(var(--safe-b)+6px);
@@ -1264,59 +1265,143 @@ async function loadPromStatus(){
 }
 
 let _lastUserMsg='';
+let _rmsgQueue=[];
+let _risStreaming=false;
+
 async function sendP(){
   const inp=document.getElementById('pin');
   const msg=(inp?.value||'').trim();
-  if(!msg||isPThinking)return;
+  if(!msg&&!_pendingImg)return;
   inp.value='';
-  _lastUserMsg=msg;
   const w=document.getElementById('pwelcome');if(w)w.style.display='none';
+
+  if(_pendingImg) return;
+
+  _lastUserMsg=msg;
   addPMsg('user',msg);
-  await _sendWithRetry(msg,0);
+  _rmsgQueue.push(msg);
+  if(!_risStreaming)_rprocessQueue();
 }
-async function _sendWithRetry(msg,attempt){
-  isPThinking=true;
+
+async function _rprocessQueue(){
+  if(!_rmsgQueue.length){_risStreaming=false;return;}
+  _risStreaming=true;
+  const msg=_rmsgQueue.shift();
+  await _sendStream(msg);
+  _rprocessQueue();
+}
+
+async function _sendStream(msg){
+  const msgs=document.getElementById('pmsgs');
   const th=document.getElementById('pthink');
   const thtxt=document.getElementById('pthink-txt');
+
+  const bubble=document.createElement('div');
+  bubble.style.cssText='margin-bottom:12px;padding:12px 14px;border-radius:18px;background:rgba(16,185,129,0.07);border:1px solid rgba(16,185,129,0.18);margin-right:22px;animation:fi 0.2s ease';
+  const now=new Date().toLocaleTimeString();
+  bubble.innerHTML='<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:7px;font-family:JetBrains Mono,monospace;font-size:9.5px;color:#10b981;font-weight:600;letter-spacing:0.08em"><span>[ PROMETHEUS ]</span><span style="opacity:0.5">'+now+'</span></div>'+
+    '<div class="r-thinking" style="font-family:JetBrains Mono,monospace;font-size:10px;color:#4facfe;opacity:0.7;margin-bottom:6px;line-height:1.8"></div>'+
+    '<div class="r-stream" style="font-size:13.5px;line-height:1.75;color:var(--text);white-space:pre-wrap;word-break:break-word;font-family:Inter,sans-serif"></div>';
+  msgs.appendChild(bubble);
+  const textEl=bubble.querySelector('.r-stream');
+  const thinkEl=bubble.querySelector('.r-thinking');
+  bubble.scrollIntoView({behavior:'auto',block:'end'});
+
+  if(thtxt)thtxt.textContent='Connexion...';
   if(th)th.style.display='flex';
-  const texts=['PROMETHEUS réfléchit...','Analyse en cours...','Traitement...'];
-  let ti=0;
-  const thi=setInterval(()=>{if(thtxt)thtxt.textContent=texts[ti++%texts.length];},1800);
+  isPThinking=true;
+
+  let fullText='';
+  const actions=[];
   try{
-    const r=await af('/remote/prometheus/chat',{
+    const t=token||gc('relay_token')||localStorage.getItem('relay_token')||'';
+    const resp=await fetch('/remote/prometheus/chat/stream',{
       method:'POST',
-      body:JSON.stringify({message:msg,sessionId:chatSess,mode:chatMode})
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+t},
+      body:JSON.stringify({message:msg,sessionId:chatSess,mode:chatMode||'chat'})
     });
-    const d=await r.json();
-    if(d.canRetry&&attempt<2){
-      clearInterval(thi);if(th)th.style.display='none';isPThinking=false;
-      addPMsg('error','⏱ Timeout (tentative '+(attempt+1)+'/3)... Reessai auto');
-      await new Promise(r=>setTimeout(r,2000));
-      return _sendWithRetry(msg,attempt+1);
+    if(!resp.ok||!resp.body)throw new Error('Stream KO: '+resp.status);
+
+    const reader=resp.body.getReader();
+    const dec=new TextDecoder();
+    let buf='';
+
+    while(true){
+      const{done,value}=await reader.read();
+      if(done)break;
+      buf+=dec.decode(value,{stream:true});
+      const lines=buf.split('\n');
+      buf=lines.pop();
+
+      let eventType='';
+      for(const line of lines){
+        if(line.startsWith('event: ')){eventType=line.slice(7);continue;}
+        if(!line.startsWith('data: '))continue;
+        try{
+          const d=JSON.parse(line.slice(6));
+          if(eventType==='webfetch'||eventType==='webdata'){
+            const label=eventType==='webfetch'?'Recherche web: '+d.intent:'Données web trouvées ✓';
+            actions.push(label);
+            thinkEl.innerHTML=actions.map(a=>'<div>'+a+'</div>').join('');
+            if(thtxt)thtxt.textContent=label;
+            bubble.scrollIntoView({behavior:'auto',block:'end'});
+          }
+          if(eventType==='start'){
+            actions.push('Analyse du message...');
+            thinkEl.innerHTML=actions.map(a=>'<div>'+a+'</div>').join('');
+          }
+          if(eventType==='token'&&d.text){
+            fullText+=d.text;
+            textEl.innerHTML=renderMd(fullText)+'<span style="display:inline-block;width:2px;height:14px;background:#4facfe;animation:blink 0.7s infinite;vertical-align:middle;margin-left:1px"></span>';
+            bubble.scrollIntoView({behavior:'auto',block:'end'});
+          }
+          if(eventType==='fallback'){
+            actions.push('Fallback Claude...');
+            thinkEl.innerHTML=actions.map(a=>'<div>'+a+'</div>').join('');
+          }
+          if(eventType==='done'){
+            textEl.innerHTML=renderMd(fullText);
+            thinkEl.style.display='none';
+          }
+          if(eventType==='error'){
+            textEl.innerHTML='<span style="color:#ef4444">'+d.message+'</span>';
+          }
+        }catch(e){}
+        eventType='';
+      }
     }
-    if(d.error)throw new Error(d.error);
-    addPMsg('prometheus',d.response);
+    if(!fullText)textEl.innerHTML='<span style="color:var(--muted)">(vide)</span>';
+    else{textEl.innerHTML=renderMd(fullText);thinkEl.style.display='none';}
+
   }catch(e){
-    if(e.name==='AbortError'&&attempt<2){
-      clearInterval(thi);if(th)th.style.display='none';isPThinking=false;
-      addPMsg('error','⏱ Connexion lente... Reessai');
-      await new Promise(r=>setTimeout(r,3000));
-      return _sendWithRetry(msg,attempt+1);
+    if(th)th.style.display='none';
+    textEl.innerHTML='<span style="color:rgba(238,242,255,0.4);font-size:12px">Fallback...</span>';
+    try{
+      const r=await af('/remote/prometheus/chat',{
+        method:'POST',
+        body:JSON.stringify({message:msg,sessionId:chatSess,mode:chatMode||'chat'})
+      });
+      const data=await r.json();
+      textEl.innerHTML=renderMd(data.response||data.error||'?');
+      thinkEl.style.display='none';
+    }catch(e2){
+      textEl.innerHTML='<span style="color:#ef4444">'+e2.message+'</span>';
     }
-    addPMsg('error','❌ '+e.message);
-    _addRetryBtn();
   }finally{
-    isPThinking=false;clearInterval(thi);if(th)th.style.display='none';
+    isPThinking=false;
+    if(th)th.style.display='none';
+    bubble.scrollIntoView({behavior:'auto',block:'end'});
   }
 }
+
 function _addRetryBtn(){
   const msgs=document.getElementById('pmsgs');if(!msgs)return;
   const d=document.createElement('div');
   d.style.cssText='text-align:center;padding:8px';
   d.innerHTML='<button onclick="retryLast()" style="padding:7px 16px;background:rgba(79,172,254,0.12);border:1px solid rgba(79,172,254,0.25);border-radius:10px;color:#4facfe;font-size:12px;cursor:pointer">🔄 Reessayer</button>';
-  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+  msgs.appendChild(d);d.scrollIntoView({behavior:'auto',block:'end'});
 }
-function retryLast(){if(_lastUserMsg)_sendWithRetry(_lastUserMsg,0);}
+function retryLast(){if(_lastUserMsg){_rmsgQueue.push(_lastUserMsg);if(!_risStreaming)_rprocessQueue();}}
 
 let _pendingImg=null;
 function handleImg(input){
@@ -1350,7 +1435,7 @@ function removeImg(){
 }
 var _origSendP=sendP;
 sendP=async function(){
-  if(!_pendingImg)return _origSendP?_origSendP():_sendWithRetry(document.getElementById('pin')?.value?.trim()||'',0);
+  if(!_pendingImg)return _origSendP();
   var defaultPrompt=_pendingImg.isImage?'Analyse cette image':'Lis et analyse ce document';
   var msg=document.getElementById('pin')?.value?.trim()||defaultPrompt;
   document.getElementById('pin').value='';
