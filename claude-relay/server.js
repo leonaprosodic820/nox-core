@@ -1352,6 +1352,66 @@ app.post('/think/improve', requireRemoteAuth, async (req, res) => { try { res.js
 
 app.get('/rl/stats', (req, res) => { res.json(rlModule.getStats()); });
 
+
+// ── MONITOR + ANALYTICS + SOVEREIGNTY TEMPS RÉEL ──
+app.get('/monitor/realtime', async (req, res) => {
+  const { execSync } = require('child_process');
+  const safe = (fn, fb = null) => { try { return fn(); } catch(e) { return fb; } };
+  const cpuRaw = safe(() => execSync("top -l 1 -s 0 | grep 'CPU usage' | awk '{print $3}'", { encoding: 'utf8', timeout: 3000 }).trim().replace('%',''));
+  const vmstat = safe(() => execSync("vm_stat", { encoding: 'utf8', timeout: 3000 }));
+  let ramPct = null;
+  if (vmstat) { const f = parseInt(vmstat.match(/Pages free:\s*(\d+)/)?.[1]||0); const a = parseInt(vmstat.match(/Pages active:\s*(\d+)/)?.[1]||0); const w = parseInt(vmstat.match(/Pages wired down:\s*(\d+)/)?.[1]||0); const t = f+a+w; if (t>0) ramPct = Math.round((a+w)/t*100); }
+  const diskRaw = safe(() => execSync("df -h / | tail -1 | awk '{print $5}'", { encoding: 'utf8', timeout: 3000 }).trim().replace('%',''));
+  const battRaw = safe(() => execSync("pmset -g batt | grep -o '[0-9]*%' | head -1", { encoding: 'utf8', timeout: 3000 }).trim().replace('%',''));
+  const uptimeRaw = safe(() => { try { return require('child_process').execSync('uptime', { encoding: 'utf8', timeout: 3000 }).trim().split(',')[0].replace(/.*up\s+/, ''); } catch(e) { return '?'; } });
+  let services = [];
+  try { const pm2list = JSON.parse(execSync('pm2 jlist 2>/dev/null', { encoding: 'utf8', timeout: 5000 })); services = pm2list.map(p => ({ name: p.name, status: p.pm2_env?.status || 'unknown', cpu: p.monit?.cpu || 0, memory: Math.round((p.monit?.memory||0)/1048576), restarts: p.pm2_env?.restart_time || 0 })); } catch(e) {}
+  let topProcs = [];
+  try { topProcs = execSync("ps aux | sort -nrk 3 | head -6 | tail -5 | awk '{print $11,$3,$4}'", { encoding: 'utf8', timeout: 3000 }).trim().split('\n').map(l => { const p = l.split(' '); return { name: p[0]?.split('/').pop()||'?', cpu: parseFloat(p[1]||0), mem: parseFloat(p[2]||0) }; }); } catch(e) {}
+  res.json({ ts: new Date().toISOString(), cpu: parseFloat(cpuRaw)||0, ram: ramPct||0, disk: parseInt(diskRaw)||0, battery: parseInt(battRaw)||null, uptime: uptimeRaw||'?', services, topProcesses: topProcs });
+});
+
+app.get('/analytics/full', localOrAuth, async (req, res) => {
+  try {
+    const cogStats = cogProfile.getStats(); const ltmStats = longTermMemory.getStats();
+    const kgStats = require('./knowledge-graph').getStats(); const rlStats = rlModule.getStats();
+    const siStats = selfImproveModule.getStats(); const idStats = identityCore.getStats();
+    const feedbackPath = require('path').join(__dirname, 'knowledge', 'response-feedback.json');
+    let fb = { ratings: [], patterns: {} }; try { fb = JSON.parse(fs.readFileSync(feedbackPath, 'utf8')); } catch(e) {}
+    const ratings = fb.ratings || []; const avg = ratings.length > 0 ? ratings.reduce((s,r) => s+(r.quality?.score||0),0)/ratings.length : 0;
+    const modelDist = {}; ratings.forEach(r => { const m = r.routedTo||'unknown'; modelDist[m] = (modelDist[m]||0)+1; });
+    const typeDist = {}; ratings.forEach(r => { const t = r.promptType||'unknown'; typeDist[t] = (typeDist[t]||0)+1; });
+    const llamaC = modelDist['llama']||0; const cacheC = modelDist['cache']||0;
+    res.json({ ts: new Date().toISOString(),
+      conversations: { total: 0, totalMessages: cogStats.totalMessages || 0 },
+      quality: { avg: Math.round(avg*100), total: ratings.length, byModel: modelDist, byType: typeDist,
+        issues: Object.values(fb.patterns||{}).flatMap(p => p.issues||[]).reduce((a,i) => { a[i]=(a[i]||0)+1; return a; }, {}) },
+      tokens: { saved: llamaC*800+cacheC*600, llamaCalls: llamaC, cacheCalls: cacheC, claudeCalls: (modelDist['claude']||0)+(modelDist['claude-deep']||0) },
+      memory: { ltmFacts: ltmStats.facts, ltmProjects: ltmStats.projects, kgNodes: kgStats.nodes, kgEdges: kgStats.edges, cogMessages: cogStats.totalMessages||0 },
+      ai: { thoughts: siStats.thoughts, improvements: siStats.improvements, rlEpisodes: rlStats.episodes, rlAvgReward: rlStats.avgReward, reflections: idStats.reflections, positions: idStats.positions },
+      system: { pushSubscribers: pushNotif.getCount(), alertsTotal: proactiveAlerts.getLog(100).length }
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.get('/sovereignty/realtime', localOrAuth, (req, res) => {
+  const sov = require('./sovereignty-engine');
+  const logPath = require('path').join(__dirname, 'logs', 'sovereignty.log');
+  let logs = []; try { logs = fs.readFileSync(logPath, 'utf8').trim().split('\n').filter(Boolean).slice(-50).reverse().map(l => { try { return JSON.parse(l); } catch(e) { return { raw: l }; } }); } catch(e) {}
+  let integrity = { ok: true, changes: [] }; try { integrity = sov.checkIntegrity(); } catch(e) {}
+  res.json({ ts: new Date().toISOString(), status: fs.existsSync(require('path').join(__dirname,'.KILL'))?'KILLED':'ACTIVE', rules: sov.IMMUTABLE_RULES?.ABSOLUTE_BLOCKS?.length||32, integrity: integrity.ok, changes: integrity.changes||[], stats: { totalAuditEntries: logs.length, blockedCommands: logs.filter(l => l.type==='blocked_command').length, warnings: logs.filter(l => l.level==='WARNING'||l.level==='CRITICAL').length, recentActivity: logs.slice(0,20) } });
+});
+
+app.get('/monitor/stream', (req, res) => {
+  res.setHeader('Content-Type','text/event-stream'); res.setHeader('Cache-Control','no-cache'); res.setHeader('Connection','keep-alive'); res.flushHeaders();
+  const send = async () => { if (res.writableEnded) return; try { const r = await fetch('http://localhost:7777/monitor/realtime'); const d = await r.json(); res.write('data: '+JSON.stringify(d)+'\n\n'); } catch(e) { res.write('data: {}\n\n'); } };
+  send(); const iv = setInterval(send, 3000); req.on('close', () => clearInterval(iv));
+});
+
+app.get('/analytics', (req, res) => res.sendFile(__dirname+'/public/analytics.html'));
+app.get('/monitor', (req, res) => res.sendFile(__dirname+'/public/monitor.html'));
+app.get('/sovereignty', (req, res) => res.sendFile(__dirname+'/public/sovereignty.html'));
+
 // ── PROMETHEUS STREAMING SSE ──
 app.post('/prometheus/stream', async (req, res) => {
   const { message, sessionId = 'prometheus-shadowroot', mode = 'chat' } = req.body;
