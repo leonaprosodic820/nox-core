@@ -80,6 +80,7 @@ const longTermMemory  = require('./long-term-memory');
 const { AgentOrchestrator } = require('./specialized-agents');
 const pushNotif = require('./push-notifications');
 const selfImproveModule = require('./self-improvement');
+const convPipeline = require('./conversation-pipeline');
 const rlModule = require('./reinforcement-learning');
 const empathyEngine = require('./empathy-engine');
 const totpAuth = require('./totp-auth');
@@ -1426,6 +1427,14 @@ function requireVPSConfirmation(req, res, next) {
   if (check.needsConfirm) return res.status(202).json({ status: 'AWAITING_CONFIRMATION', message: 'Confirme: ' + cmd.slice(0,80), hint: 'Renvoie avec confirmed:true' });
   next();
 }
+
+
+app.post('/pipeline/test', localOrAuth, async (req, res) => {
+  try {
+    const r = await convPipeline.run(req.body.message || 'test', [], 'prometheus-shadowroot');
+    res.json(r);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
 
 // ── PROMETHEUS STREAMING SSE ──
 app.post('/prometheus/stream', async (req, res) => {
