@@ -1662,16 +1662,48 @@ app.post('/prometheus/chat', async (req, res) => {
       } else {
         const allCtx = [webCtx, ragCtx, episodicCtx, crossCtx, recentCtx, profileCtx, existCtx].filter(Boolean).join('\n');
         const built = promptEngine.buildPrompt(message, history.slice(-8), allCtx);
-        const isTrivial = built.type === 'chat' && message.trim().split(/\s+/).length <= 3 &&
+
+        // Auto-modification depuis le chat
+        if (built.type === 'selfmod') {
+          try {
+            const modResult = await selfModifier.selfImproveGuided(message, allCtx);
+            if (modResult.success && !modResult.logged) {
+              response = 'J\'ai modifié `' + modResult.file + '` :\n\n' +
+                '**Raison** : ' + (modResult.reason || message) + '\n' +
+                '**Taille** : ' + modResult.sizeBefore + ' → ' + modResult.sizeAfter + ' chars\n' +
+                '**Backup** : créé automatiquement\n\n' +
+                'La modification est active immédiatement.';
+              _routedTo = 'self-modifier';
+            } else if (modResult.success && modResult.logged) {
+              response = 'J\'ai analysé ta demande. Priorité basse — je l\'ai notée pour plus tard :\n\n' +
+                '**Fichier** : ' + (modResult.plan?.targetFile || '?') + '\n' +
+                '**Modification** : ' + (modResult.plan?.modification || '?');
+              _routedTo = 'self-modifier-logged';
+            } else if (modResult.skipped) {
+              response = 'J\'ai analysé mais cette modification n\'est pas sûre : ' + (modResult.reason || 'risque détecté');
+              _routedTo = 'self-modifier-skip';
+            } else {
+              response = 'Auto-modification échouée : ' + (modResult.error || 'erreur inconnue') +
+                '\n\nJe peux quand même t\'expliquer comment améliorer manuellement.';
+              _routedTo = 'self-modifier-fail';
+            }
+          } catch(e) {
+            response = 'Erreur auto-modification : ' + e.message;
+            _routedTo = 'self-modifier-error';
+          }
+        }
+
+        const isTrivial = !response && built.type === 'chat' && message.trim().split(/\s+/).length <= 3 &&
           /^(bonjour|salut|hey|coucou|hello|hi|ok|oui|non|merci|thanks|bien|super|parfait|top|ca va|yo|bonsoir|cool|yes|no)$/i.test(message.trim());
         let usedToT = false;
-        if (!isTrivial && treeOfThoughts && (built.type === 'mission' || built.type === 'analysis') && message.length > 80) {
+        if (response) { /* selfmod already handled */ }
+        else if (!isTrivial && treeOfThoughts && (built.type === 'mission' || built.type === 'analysis') && message.length > 80) {
           try {
             const tree = await race(treeOfThoughts.thinkInTrees(message, hist, { showTree: false }), 20000);
             if (tree?.answer) { response = tree.answer; usedToT = true; _routedTo = 'claude-tot'; }
           } catch {}
         }
-        if (!usedToT) {
+        if (!usedToT && !response) {
           const deepMode = require('./deep-mode');
           if ((isTrivial || built.model === 'llama') && modelRouter) {
             const mt = built.model === 'llama' ? built.maxTokens || 1000 : 150;

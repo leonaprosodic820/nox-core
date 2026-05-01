@@ -49,7 +49,8 @@ async function applyModification(targetFile, modification, reason) {
       bridge.call('Modifie "' + targetFile + '" pour: ' + reason + '\nModification: ' + modification + '\nContenu actuel:\n' + current.slice(0, 2000) + '\nRÈGLES: ne jamais modifier sovereignty, pas de process.exit, syntaxe Node.js valide. Retourne UNIQUEMENT le code.', { maxTokens: 1500 }),
       new Promise((_, r) => setTimeout(() => r(new Error('timeout')), 30000))
     ]);
-    newContent = (typeof resp === 'string' ? resp : resp.content?.[0]?.text || '').replace(/```javascript|```js|```/g, '').trim();
+    if (!resp) return { success: false, error: 'Timeout génération' };
+    newContent = (typeof resp === 'string' ? resp : (resp.content?.[0]?.text || '')).replace(/```javascript|```js|```/g, '').trim();
   } catch(e) { return { success: false, error: 'Génération échouée: ' + e.message }; }
   const check = checkModification(targetFile, newContent);
   if (!check.allowed) return { success: false, error: 'Bloqué', reasons: check.errors.map(e => e.message) };
@@ -72,11 +73,12 @@ async function selfImproveGuided(issue, context) {
   const bridge = require('./claude-api-bridge');
   try {
     const resp = await Promise.race([
-      bridge.call('Problème: "' + issue + '"\nFichiers modifiables: ' + [...MODIFIABLE_FILES].join(', ') + '\nJSON: {"targetFile":"...","modification":"...","reason":"...","priority":"low|medium|high","safe":true}', { maxTokens: 300 }),
-      new Promise((_, r) => setTimeout(() => r(null), 15000))
+      bridge.call('Problème: "' + issue + '"\nFichiers modifiables: ' + [...MODIFIABLE_FILES].join(', ') + '\nJSON: {"targetFile":"...","modification":"...","reason":"...","priority":"low|medium|high","safe":true}', { maxTokens: 300, timeoutMs: 60000 }),
+      new Promise((_, r) => setTimeout(() => r(new Error('Timeout 60s — Claude CLI occupé')), 60000))
     ]);
-    if (!resp) return { success: false, error: 'Timeout' };
-    const text = (typeof resp === 'string' ? resp : resp.content?.[0]?.text || '').replace(/```json|```/g, '').trim();
+    if (!resp) return { success: false, error: 'Pas de réponse' };
+    const rawText = typeof resp === 'string' ? resp : (resp.content?.[0]?.text || JSON.stringify(resp));
+    const text = rawText.replace(/```json|```/g, '').trim();
     const plan = JSON.parse(text);
     if (!plan.safe) return { success: false, reason: plan.reason, skipped: true };
     if (plan.priority === 'low') { logMod(plan.targetFile, plan.reason, plan.modification, 0, 0); return { success: true, logged: true, plan }; }
