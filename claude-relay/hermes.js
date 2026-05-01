@@ -421,6 +421,49 @@ global.sendHermesAlert = async (type, name, message) => {
 };
 
 
+
+// ── PENSÉE AUTONOME ──
+bot.onText(/\/think/, async (msg) => {
+  if (!auth(msg)) return deny(msg.chat.id);
+  await bot.sendMessage(msg.chat.id, '🧠 Je réfléchis...');
+  try {
+    const data = await api('/think/now', 'POST', {});
+    if (data.error) { await bot.sendMessage(msg.chat.id, '❌ ' + data.error); return; }
+    await bot.sendMessage(msg.chat.id,
+      '*🧠 Auto-réflexion*\n\n*Question:*\n' + (data.question || '?') +
+      '\n\n*Réflexion:*\n' + (data.reflection || '?') +
+      '\n\n*Insight:*\n' + (data.insight || '?') +
+      (data.action ? '\n\n*Action:* ' + data.action : ''),
+      { parse_mode: 'Markdown' });
+  } catch(e) { await bot.sendMessage(msg.chat.id, '❌ ' + e.message); }
+});
+
+bot.onText(/\/thoughts/, async (msg) => {
+  if (!auth(msg)) return deny(msg.chat.id);
+  try {
+    const data = await api('/think/thoughts?limit=5');
+    const t = data.thoughts || [];
+    if (!t.length) { await bot.sendMessage(msg.chat.id, '🧠 Pas encore de pensées'); return; }
+    let txt = '*🧠 Pensées autonomes*\n\n';
+    t.forEach((th, i) => { txt += (i+1) + '. ' + th.content.slice(0, 120) + '\n\n'; });
+    await bot.sendMessage(msg.chat.id, txt, { parse_mode: 'Markdown' });
+  } catch(e) { await bot.sendMessage(msg.chat.id, '❌ ' + e.message); }
+});
+
+bot.onText(/\/selfstats/, async (msg) => {
+  if (!auth(msg)) return deny(msg.chat.id);
+  try {
+    const d = await api('/think/stats');
+    await bot.sendMessage(msg.chat.id,
+      '*🧬 Auto-amélioration*\n\nPensées: ' + (d.thoughts || 0) +
+      '\nAméliorations: ' + (d.improvements || 0) +
+      '\nRéponses analysées: ' + (d.responses || 0) +
+      '\nQualité moyenne: ' + (d.avgQuality || '?'),
+      { parse_mode: 'Markdown' });
+  } catch(e) { await bot.sendMessage(msg.chat.id, '❌ ' + e.message); }
+});
+
+
 bot.on('message', async (msg) => {
   if (!auth(msg)) return; if (msg.text?.startsWith('/')) return;
   const chatId = msg.chat.id;

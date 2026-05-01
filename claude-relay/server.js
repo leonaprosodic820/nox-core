@@ -79,6 +79,7 @@ const proactiveAlerts = require('./proactive-alerts');
 const longTermMemory  = require('./long-term-memory');
 const { AgentOrchestrator } = require('./specialized-agents');
 const pushNotif = require('./push-notifications');
+const selfImproveModule = require('./self-improvement');
 const totpAuth = require('./totp-auth');
 const projMemory = require('./project-memory');
 const analytics = require('./analytics-tracker');
@@ -1339,6 +1340,13 @@ app.post('/ltm/weekly', requireRemoteAuth, async (req, res) => { const d = await
 app.get('/agents/status', localOrAuth, (req, res) => { res.json({ agents: AgentOrchestrator.getStatus() }); });
 app.post('/agents/run/:name', requireRemoteAuth, async (req, res) => { res.json(await AgentOrchestrator.runAgent(req.params.name)); });
 
+
+// ── AUTO-AMÉLIORATION ──
+app.get('/think/stats', localOrAuth, (req, res) => { res.json(selfImproveModule.getStats()); });
+app.get('/think/thoughts', localOrAuth, (req, res) => { res.json({ thoughts: selfImproveModule.getThoughts(parseInt(req.query.limit) || 10) }); });
+app.post('/think/now', requireRemoteAuth, async (req, res) => { try { const t = await selfImproveModule.forceThink(); res.json(t || { error: 'Pensée impossible' }); } catch(e) { res.status(500).json({ error: e.message }); } });
+app.post('/think/improve', requireRemoteAuth, async (req, res) => { try { res.json(await selfImproveModule.executeImprovement(req.body.action, req.body.reasoning)); } catch(e) { res.status(500).json({ error: e.message }); } });
+
 // ── PROMETHEUS STREAMING SSE ──
 app.post('/prometheus/stream', async (req, res) => {
   const { message, sessionId = 'prometheus-shadowroot', mode = 'chat' } = req.body;
@@ -1460,6 +1468,7 @@ app.post('/prometheus/chat', async (req, res) => {
     if (!res.headersSent) res.json({ response: 'Timeout — la requete prend trop de temps. Reessaie ou simplifie.', error: 'timeout', sessionId: req.body?.sessionId, canRetry: true });
   }, 660000);
   try {
+    const _startTime = Date.now();
     const { message, sessionId = 'prometheus-shadowroot', mode = 'chat' } = req.body;
     if (!message) { clearTimeout(chatTimer); return res.status(400).json({ error: 'Message requis' }); }
     if (mode === 'classify') {
@@ -1585,7 +1594,8 @@ app.post('/prometheus/chat', async (req, res) => {
     setImmediate(() => {
       try { require('./session-context').updateProfile(message, response).catch(() => {}); } catch {}
       try { cogModule.learn(message, response); } catch(e) {}
-        try { longTermMemory.extractAndStore(message, response); } catch(e) {}
+      try { longTermMemory.extractAndStore(message, response); } catch(e) {}
+      try { selfImproveModule.recordResponse(message, response, { promptType: built?.type, routedTo: _routedTo, duration: Date.now() - _startTime }); } catch(e) {}
     });
     clearTimeout(chatTimer);
     if (!res.headersSent) res.json({ response, sessionId, messageCount: history.length, mode, routedTo: _routedTo });
