@@ -68,6 +68,13 @@ try { var hfImage = require('./hf-image'); } catch(e) { hfImage = null; }
 try { var webDeploy = require('./web-deployer'); } catch(e) { webDeploy = null; }
 
 const streamBridge = require('./claude-stream-bridge');
+const cogProfile = require('./cognitive-profile');
+const existEngine = require('./existential-engine');
+const identityCore = require('./identity-core');
+const cogModule = require('./cognitive-module');
+const sseStreamMgr = require('./sse-stream-manager');
+const cogMissionRunner = require('./mission-runner');
+const { analyze: cogAnalyze } = require('./analyze-module');
 const totpAuth = require('./totp-auth');
 const projMemory = require('./project-memory');
 const analytics = require('./analytics-tracker');
@@ -1251,6 +1258,17 @@ app.post('/identity/position', requireRemoteAuth, (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+app.get('/cognitive/stats', (req, res) => {
+  try {
+    res.json({
+      cognitive: cogModule.getProfile(),
+      streams:   sseStreamMgr.getStats(),
+      missions:  cogMissionRunner.getStats(),
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── PROMETHEUS STREAMING SSE ──
 app.post('/prometheus/stream', async (req, res) => {
   const { message, sessionId = 'wpa-stream', mode = 'chat' } = req.body;
@@ -1433,9 +1451,6 @@ app.post('/prometheus/chat', async (req, res) => {
       }
       const promptEngine = require('./prompt-engine');
       const sessionCtx = require('./session-context');
-const cogProfile = require('./cognitive-profile');
-const existEngine = require('./existential-engine');
-const identityCore = require('./identity-core');
       // Profil cognitif
       cogProfile.analyzeMessage(message);
       const profileCtx = cogProfile.buildContextString();
@@ -1495,7 +1510,10 @@ const identityCore = require('./identity-core');
     });
     saveChatSession(sessionId, history);
     if (history.length > 20) history.splice(0, history.length - 20);
-    setImmediate(() => { try { require('./session-context').updateProfile(message, response).catch(() => {}); } catch {} });
+    setImmediate(() => {
+      try { require('./session-context').updateProfile(message, response).catch(() => {}); } catch {}
+      try { cogModule.learn(message, response); } catch(e) {}
+    });
     clearTimeout(chatTimer);
     if (!res.headersSent) res.json({ response, sessionId, messageCount: history.length, mode, routedTo: _routedTo });
   } catch (e) { clearTimeout(chatTimer); if (!res.headersSent) res.status(500).json({ error: e.message }); }
