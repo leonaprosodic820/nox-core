@@ -479,7 +479,7 @@ app.get('/ios-shortcuts', (req, res) => res.sendFile(require('path').join(__dirn
 app.get('/health', (req, res) => {
   const ob = require('./omega-brain');
   res.json({
-    system: 'PROMETHEUS v10.0', version: '10.0.0',
+    system: 'PROMETHEUS v11.0', version: '11.0.0',
     healthy: true, timestamp: new Date().toISOString(),
     uptime: process.uptime(), pid: process.pid,
     brain: ob.getStatus(), instances: instances.size,
@@ -916,7 +916,7 @@ function prometheusStatusHandler(req, res) {
   const ob = require('./omega-brain');
   const bridgeStats = require('./claude-api-bridge').getStats();
   const perf = perfTracker ? perfTracker.getGlobalReport() : {};
-  res.json({ system: 'PROMETHEUS v10.0', intelligence: 'OMEGA + PROMETHEUS', available: true, mode: ob.getStatus().mode, brain: ob.getStatus(), bridge: bridgeStats, totalIterations: perf.totalIterations || 0, totalEnhancements: perf.totalEnhancements || 0, totalPreventedErrors: perf.totalPreventedErrors || 0 });
+  res.json({ system: 'PROMETHEUS v11.0', intelligence: 'OMEGA + PROMETHEUS', available: true, mode: ob.getStatus().mode, brain: ob.getStatus(), bridge: bridgeStats, totalIterations: perf.totalIterations || 0, totalEnhancements: perf.totalEnhancements || 0, totalPreventedErrors: perf.totalPreventedErrors || 0 });
 }
 app.get('/omega/status', prometheusStatusHandler);
 app.get('/prometheus/status', prometheusStatusHandler);
@@ -1017,7 +1017,7 @@ app.get('/monitor/full', (req, res) => {
 
 // ── PROMETHEUS SYSTEM PROMPT ──
 function buildPrometheusPrompt(histContext) {
-  return `Tu es PROMETHEUS v10.0 — intelligence autonome installée sur ce Mac.
+  return `Tu es PROMETHEUS v11.0 — intelligence autonome installée sur ce Mac.
 
 PERSONNALITÉ : Direct, précis, expert. Chaque mot compte. Tu es l'IA la plus avancée sur ce Mac.
 
@@ -1918,7 +1918,7 @@ app.delete('/remote/prometheus/chat/:sessionId', requireRemoteAuth, (req, res) =
 
 app.get('/remote/prometheus/status', requireRemoteAuth, (req, res) => {
   res.json({
-    available: true, model: 'claude-opus-4-7', system: 'PROMETHEUS v10.0',
+    available: true, model: 'claude-opus-4-7', system: 'PROMETHEUS v11.0',
     capabilities: ['Chat conversationnel', 'Controle Mac complet', 'Missions autonomes', 'Screenshots & vision', 'Gestion fichiers', 'Shell commands']
   });
 });
@@ -1939,7 +1939,7 @@ app.post('/telegram/configure', requireRemoteAuth, (req, res) => {
 
 app.get('/telegram/test', requireRemoteAuth, async (req, res) => {
   if (!telegram) return res.status(503).json({ error: 'Telegram not available' });
-  const sent = await telegram.send('\uD83D\uDD25 Test notification from PROMETHEUS v10.0');
+  const sent = await telegram.send('\uD83D\uDD25 Test notification from PROMETHEUS v11.0');
   res.json({ sent });
 });
 
@@ -1986,7 +1986,7 @@ app.post('/prometheus/execute', async (req, res) => {
 
 app.get('/prometheus/consciousness', (req, res) => {
   const state = prometheus ? prometheus.getState() : { state: 'unavailable' };
-  res.json({ system: 'PROMETHEUS v10.0 — Autonomous Chief', status: state.state === 'operational' ? 'OPERATIONAL' : state.state, ...state });
+  res.json({ system: 'PROMETHEUS v11.0 — Autonomous Chief', status: state.state === 'operational' ? 'OPERATIONAL' : state.state, ...state });
 });
 
 app.get('/prometheus/diagnostic', async (req, res) => {
@@ -2199,7 +2199,7 @@ app.get('/vision', (req, res) => res.sendFile(path.join(__dirname, 'public', 'vi
 
 wss.on('connection', (ws, req) => {
   log('WS', '-', 'Client connected');
-  ws.send(JSON.stringify({ event: 'connected', message: 'PROMETHEUS v10.0 WebSocket ready' }));
+  ws.send(JSON.stringify({ event: 'connected', message: 'PROMETHEUS v11.0 WebSocket ready' }));
 });
 
 // ── EXPORT FOR TESTING ──
@@ -2838,7 +2838,7 @@ if (require.main === module) {
     try { require('./logo').printLogo(); } catch {}
     const omegaStatus = require('./omega-brain').getStatus();
     watchdog.startHealthChecks(PORT);
-    notify({ title: '\uD83D\uDD25 PROMETHEUS v10.0', message: `Intelligence Autonome :${PORT}`, sound: 'startup' });
+    notify({ title: '\uD83D\uDD25 PROMETHEUS v11.0', message: `Intelligence Autonome :${PORT}`, sound: 'startup' });
     // Warm up Claude CLI in background
     require('./claude-api-bridge').callFast('OK').then(() => console.log('  \u2728 Claude CLI warmed up')).catch(() => {});
     setTimeout(() => { try { if (vectorMem) { vectorMem.indexExistingHistory(); console.log('[Vector] History indexed'); } } catch(e) {} }, 10000);
