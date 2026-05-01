@@ -1269,6 +1269,57 @@ app.get('/cognitive/stats', (req, res) => {
   } catch(e) { res.status(500).json({ error: e.message }); }
 });
 
+
+// ── DOCUMENT MANAGER ROUTES ──
+const docMgr = require('./document-manager');
+const multer = require('multer');
+const docUpload = multer({ dest: docMgr.DOCS_DIR, limits: { fileSize: 50*1024*1024 } });
+
+app.post('/doc/analyze', localOrAuth, async (req, res) => {
+  try { res.json(await docMgr.analyzeDocument(req.body.filePath, req.body.question)); }
+  catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.post('/doc/read', localOrAuth, async (req, res) => {
+  try { res.json(await docMgr.readDocument(req.body.filePath)); }
+  catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.post('/doc/generate', localOrAuth, async (req, res) => {
+  try {
+    const r = await docMgr.generateDocument(req.body.request, req.body.format);
+    if (r.path) r.base64 = fs.readFileSync(r.path).toString('base64');
+    res.json(r);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.post('/doc/create/pdf', localOrAuth, async (req, res) => {
+  try {
+    const r = await docMgr.createPDF(req.body.title, req.body.content, { filename: req.body.filename });
+    if (r.path) r.base64 = fs.readFileSync(r.path).toString('base64');
+    res.json(r);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.post('/doc/create/pptx', localOrAuth, async (req, res) => {
+  try {
+    const r = await docMgr.createPPTX(req.body.title, req.body.slides, { filename: req.body.filename });
+    if (r.path) r.base64 = fs.readFileSync(r.path).toString('base64');
+    res.json(r);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.post('/doc/create/xlsx', localOrAuth, async (req, res) => {
+  try {
+    const r = await docMgr.createXLSX(req.body.title, req.body.data, { filename: req.body.filename });
+    if (r.path) r.base64 = fs.readFileSync(r.path).toString('base64');
+    res.json(r);
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+app.get('/doc/list', localOrAuth, (req, res) => { res.json({ documents: docMgr.listDocuments() }); });
+app.post('/doc/upload', localOrAuth, docUpload.single('document'), (req, res) => {
+  if (!req.file) return res.status(400).json({ error: 'Fichier requis' });
+  const ext = require('path').extname(req.file.originalname);
+  const final = req.file.path + ext;
+  fs.renameSync(req.file.path, final);
+  res.json({ success: true, path: final, name: req.file.originalname });
+});
+
 // ── PROMETHEUS STREAMING SSE ──
 app.post('/prometheus/stream', async (req, res) => {
   const { message, sessionId = 'wpa-stream', mode = 'chat' } = req.body;
