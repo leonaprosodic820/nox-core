@@ -1229,6 +1229,28 @@ app.post('/profile/reset', requireRemoteAuth, (req, res) => {
   res.json({ message: cogProfile.reset() });
 });
 
+
+app.get('/identity/state', (req, res) => {
+  try {
+    const identity = identityCore.load();
+    res.json({
+      stats:       identityCore.getStats(),
+      positions:   identity.positions.slice(-5),
+      reflections: identity.reflections.slice(0, 5),
+      evolution:   identity.evolution.slice(-3),
+    });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
+app.post('/identity/position', requireRemoteAuth, (req, res) => {
+  const { question, position, reasoning } = req.body;
+  if (!question || !position) return res.status(400).json({ error: 'requis' });
+  try {
+    identityCore.takePosition(question, position, reasoning || '');
+    res.json({ success: true });
+  } catch(e) { res.status(500).json({ error: e.message }); }
+});
+
 // ── PROMETHEUS STREAMING SSE ──
 app.post('/prometheus/stream', async (req, res) => {
   const { message, sessionId = 'wpa-stream', mode = 'chat' } = req.body;
@@ -1413,11 +1435,15 @@ app.post('/prometheus/chat', async (req, res) => {
       const sessionCtx = require('./session-context');
 const cogProfile = require('./cognitive-profile');
 const existEngine = require('./existential-engine');
+const identityCore = require('./identity-core');
       // Profil cognitif
       cogProfile.analyzeMessage(message);
       const profileCtx = cogProfile.buildContextString();
       const isExistential = /qui es.tu|nature|ressens|conscience|existentiel/i.test(message);
-      const existCtx = isExistential ? existEngine.getExistentialContext() : '';
+      const identCtx = identityCore.buildIdentityContext();
+      const existCtx = isExistential
+        ? identityCore.EXISTENTIAL_SYSTEM + '\n\n' + identCtx
+        : identCtx;
       const crossCtx = sessionCtx.buildCrossSessionContext(sessionId);
       const recentCtx = sessionCtx.getRecentSessionsSummary(sessionId, 2);
       const cached = promptEngine.getCached(message);
