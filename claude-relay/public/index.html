@@ -7,96 +7,6 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <script>if('serviceWorker' in navigator){navigator.serviceWorker.getRegistrations().then(r=>r.forEach(s=>s.unregister()));caches.keys().then(k=>k.forEach(c=>caches.delete(c)))}
-// ── STREAMING TEMPS RÉEL ──
-async function sendChatStreaming(msg) {
-  const token = localStorage.getItem('relay_token') || getCookie('relay_token');
-  const thinking = document.getElementById('chat-thinking');
-  const msgs = document.getElementById('chat-msgs');
-
-  addMsg(msg, 'user');
-  thinking.style.display = 'flex';
-  document.getElementById('think-txt').textContent = 'PROMETHEUS réfléchit...';
-  msgs.scrollTop = msgs.scrollHeight;
-
-  let bubble = null;
-  let bubbleText = null;
-  let fullText = '';
-
-  try {
-    const resp = await fetch('/prometheus/stream', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + token,
-      },
-      body: JSON.stringify({
-        message: msg,
-        sessionId: getSessionId(),
-        mode: chatMode || 'chat',
-      }),
-    });
-
-    if (!resp.ok || !resp.body) {
-      thinking.style.display = 'none';
-      return sendChat();
-    }
-
-    const reader = resp.body.getReader();
-    const decoder = new TextDecoder();
-    thinking.style.display = 'none';
-
-    bubble = document.createElement('div');
-    bubble.className = 'msg-bubble prom';
-    bubble.innerHTML = '<div class="bubble-inner">' +
-      '<div class="bubble-role" style="color:var(--green)">' +
-      '[ PROMETHEUS ] <span class="bts">' +
-      new Date().toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit',second:'2-digit'}) +
-      '</span></div>' +
-      '<div class="bubble-text" id="streaming-text"></div>' +
-      '</div>';
-
-    const thinkingEl = document.getElementById('chat-thinking');
-    msgs.insertBefore(bubble, thinkingEl);
-    bubbleText = document.getElementById('streaming-text');
-
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-
-      const chunk = decoder.decode(value);
-      const lines = chunk.split('\n');
-
-      for (const line of lines) {
-        if (line.startsWith('data: ')) {
-          try {
-            const data = JSON.parse(line.slice(6));
-            if (data.token) {
-              fullText += data.token;
-              bubbleText.innerHTML = fullText
-                .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
-                .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
-                .replace(/`(.+?)`/g,'<code>$1</code>')
-                .replace(/\n/g,'<br>');
-              msgs.scrollTop = msgs.scrollHeight;
-            }
-            if (data.action) {
-              document.getElementById('think-txt').textContent = data.action;
-              thinking.style.display = 'flex';
-            }
-          } catch(e) {}
-        }
-      }
-    }
-    thinking.style.display = 'none';
-
-  } catch(e) {
-    thinking.style.display = 'none';
-    if (bubble) bubble.remove();
-    addMsg('❌ ' + e.message, 'err');
-  }
-}
-
-
 window.addEventListener('DOMContentLoaded', () => {
   const savedMode = localStorage.getItem('wpa-current-mode') || 'chat';
   chatMode = savedMode;
@@ -537,7 +447,7 @@ body{min-height:100%;background:var(--bg);color:var(--text);
 .chat-messages::-webkit-scrollbar-track{background:transparent}
 .chat-messages::-webkit-scrollbar-thumb{background:rgba(79,172,254,0.2);border-radius:3px}
 
-.msg-bubble{max-width:82%;animation:msgIn 0.25s ease}
+.msg-bubble{max-width:82%;animation:msgIn 0.25s ease;overflow:hidden;box-sizing:border-box}
 @keyframes msgIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 .msg-bubble.user{align-self:flex-end}
 .msg-bubble.prom{align-self:flex-start}
@@ -1400,8 +1310,8 @@ async function loadModeHistory(mode) {
     const context = data.context || [];
     if (!context.length) { showWelcome(); return; }
     context.forEach(m => {
-      if (m.role === 'user') addMsg(m.content, 'user', false);
-      else if (m.role === 'assistant') addMsg(m.content, 'prom', false);
+      if (m.role === 'user') addMsg('user', m.content);
+      else if (m.role === 'assistant') addMsg('prom', m.content);
     });
     msgs.scrollTop = msgs.scrollHeight;
   } catch(e) { showWelcome(); }
@@ -1470,7 +1380,8 @@ function addMsg(role,text){
     <div class="bubble-text">${role==='prom'?renderMd(text):esc(text)}</div>
   </div>`;
   msgs.appendChild(div);
-  msgs.scrollTop=msgs.scrollHeight;
+  requestAnimationFrame(()=>{msgs.scrollTop=msgs.scrollHeight;});
+  setTimeout(()=>{msgs.scrollTop=msgs.scrollHeight;},100);
 }
 
 function clearChat(){

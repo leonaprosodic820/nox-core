@@ -508,6 +508,11 @@ if (remoteAuth) {
 }
 
 const requireRemoteAuth = remoteAuth ? remoteAuth.requireAuth : (req, res, next) => next();
+const localOrAuth = (req, res, next) => {
+  const ip = req.ip || req.connection?.remoteAddress || '';
+  if (ip === '127.0.0.1' || ip === '::1' || ip === '::ffff:127.0.0.1') return next();
+  return requireRemoteAuth(req, res, next);
+};
 
 // ── REMOTE ROUTES ──
 
@@ -1046,7 +1051,7 @@ ${(() => { try { return require('./self-improve').getImprovementContext(); } cat
 }
 
 // ── VISION ANALYZE ──
-app.post('/vision/analyze', requireRemoteAuth, async (req, res) => {
+app.post('/vision/analyze', localOrAuth, async (req, res) => {
   const { image, mediaType, prompt, sessionId } = req.body;
   if (!image) return res.status(400).json({ error: 'image requise' });
   try {
@@ -1063,7 +1068,7 @@ app.post('/vision/analyze', requireRemoteAuth, async (req, res) => {
 });
 
 // ── DOCUMENT ANALYZE ──
-app.post('/document/analyze', requireRemoteAuth, async (req, res) => {
+app.post('/document/analyze', localOrAuth, async (req, res) => {
   const { document: docBase64, fileName, mediaType, prompt, sessionId } = req.body;
   if (!docBase64) return res.status(400).json({ error: 'document requis' });
   try {

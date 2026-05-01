@@ -1399,7 +1399,8 @@ function addPMsg(role,text){
   if(role==='prometheus'){content.innerHTML=renderMd(text);}else{content.textContent=text;}
   div.appendChild(hdr);div.appendChild(content);
   msgs.appendChild(div);
-  msgs.scrollTop=msgs.scrollHeight;
+  requestAnimationFrame(()=>{msgs.scrollTop=msgs.scrollHeight;});
+  setTimeout(()=>{msgs.scrollTop=msgs.scrollHeight;},100);
 }
 
 function clearP(){
