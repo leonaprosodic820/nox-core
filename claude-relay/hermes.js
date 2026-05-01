@@ -464,6 +464,22 @@ bot.onText(/\/selfstats/, async (msg) => {
 });
 
 
+
+// ── CONFIRMATION VPS TELEGRAM ──
+const _pendingVPS = new Map();
+bot.onText(/\/vpsconfirm(?:\s+(\S+))?/, async (msg, match) => {
+  if (!auth(msg)) return deny(msg.chat.id);
+  const id = match?.[1]?.trim();
+  if (!id || !_pendingVPS.has(id)) { await bot.sendMessage(msg.chat.id, '❌ Action VPS introuvable ou expirée'); return; }
+  const pending = _pendingVPS.get(id); _pendingVPS.delete(id);
+  await bot.sendMessage(msg.chat.id, '✅ VPS confirmé — exécution...');
+  try {
+    const r = await api('/vps/execute', 'POST', { command: pending.command, vps: pending.vps, confirmed: true });
+    await bot.sendMessage(msg.chat.id, '✅ *Résultat VPS*\n`' + (r.output || r.result || 'OK').slice(0,300) + '`', { parse_mode: 'Markdown' });
+  } catch(e) { await bot.sendMessage(msg.chat.id, '❌ ' + e.message); }
+});
+
+
 bot.on('message', async (msg) => {
   if (!auth(msg)) return; if (msg.text?.startsWith('/')) return;
   const chatId = msg.chat.id;

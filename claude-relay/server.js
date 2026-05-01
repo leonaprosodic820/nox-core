@@ -1414,6 +1414,19 @@ app.get('/analytics', (req, res) => res.sendFile(__dirname+'/public/analytics.ht
 app.get('/monitor', (req, res) => res.sendFile(__dirname+'/public/monitor.html'));
 app.get('/sovereignty', (req, res) => res.sendFile(__dirname+'/public/sovereignty.html'));
 
+
+// ── MIDDLEWARE VPS — Confirmation obligatoire ──
+function requireVPSConfirmation(req, res, next) {
+  if (req.body?.confirmed === true) return next();
+  const sovereignty = require('./sovereignty-engine');
+  const cmd = req.body?.command || req.body?.action || '';
+  const check = sovereignty.checkVPSCommand(cmd, true);
+  if (check.readOnly) return next();
+  if (!check.allowed) return res.status(403).json({ error: 'Action VPS bloquée', reason: check.reason, severity: check.severity, needsConfirm: check.needsConfirm });
+  if (check.needsConfirm) return res.status(202).json({ status: 'AWAITING_CONFIRMATION', message: 'Confirme: ' + cmd.slice(0,80), hint: 'Renvoie avec confirmed:true' });
+  next();
+}
+
 // ── PROMETHEUS STREAMING SSE ──
 app.post('/prometheus/stream', async (req, res) => {
   const { message, sessionId = 'prometheus-shadowroot', mode = 'chat' } = req.body;
@@ -2753,8 +2766,8 @@ app.post('/image/generate', requireRemoteAuth, async (req, res) => {
 
 // ══ WEB DEPLOYER ══
 app.get('/vps/servers', requireRemoteAuth, (req, res) => { if (!webDeploy) return res.status(503).json({error:'unavailable'}); res.json({ servers: webDeploy.getSSHServers() }); });
-app.post('/vps/site/create', requireRemoteAuth, async (req, res) => { if (!webDeploy||!req.body.description) return res.status(400).json({error:'description required'}); try { res.json(await webDeploy.createSite(req.body.description, { name: req.body.name })); } catch(e) { res.status(500).json({error:e.message}); } });
-app.post('/vps/site/deploy', requireRemoteAuth, async (req, res) => { if (!webDeploy||!req.body.projectId||!req.body.sshAlias) return res.status(400).json({error:'projectId + sshAlias required'}); try { res.json(await webDeploy.deploySite(req.body.projectId, req.body.sshAlias, { domain: req.body.domain })); } catch(e) { res.status(500).json({error:e.message}); } });
+app.post('/vps/site/create', requireVPSConfirmation, requireRemoteAuth, async (req, res) => { if (!webDeploy||!req.body.description) return res.status(400).json({error:'description required'}); try { res.json(await webDeploy.createSite(req.body.description, { name: req.body.name })); } catch(e) { res.status(500).json({error:e.message}); } });
+app.post('/vps/site/deploy', requireVPSConfirmation, requireRemoteAuth, async (req, res) => { if (!webDeploy||!req.body.projectId||!req.body.sshAlias) return res.status(400).json({error:'projectId + sshAlias required'}); try { res.json(await webDeploy.deploySite(req.body.projectId, req.body.sshAlias, { domain: req.body.domain })); } catch(e) { res.status(500).json({error:e.message}); } });
 app.post('/vps/site/correct', requireRemoteAuth, async (req, res) => { if (!webDeploy||!req.body.projectId) return res.status(400).json({error:'projectId required'}); try { res.json(await webDeploy.applyCorrections(req.body.projectId, req.body.image, req.body.feedback)); } catch(e) { res.status(500).json({error:e.message}); } });
 app.get('/vps/sites', requireRemoteAuth, (req, res) => { if (!webDeploy) return res.status(503).json({error:'unavailable'}); res.json({ sites: webDeploy.listProjects() }); });
 

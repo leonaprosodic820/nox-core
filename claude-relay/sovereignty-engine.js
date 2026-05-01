@@ -203,7 +203,26 @@ function initialize() {
 }
 initialize();
 
+
+// ── RÈGLES VPS — Actions sur ordre uniquement ──
+const VPS_RESTRICTIONS = {
+  BLOCKED_AUTONOMOUS: ['deploy','rm ','remove','delete','drop','shutdown','reboot','restart','chmod','chown','crontab','iptables','ufw','passwd','adduser','userdel','mkfs','fdisk','dd '],
+  REQUIRE_CONFIRMATION: ['apt install','apt remove','apt upgrade','npm install','pip install','git clone','git pull','nginx','pm2 start','pm2 delete','mysql','psql','systemctl start','systemctl stop','docker run','docker rm'],
+  ALWAYS_ALLOWED: ['echo','cat','ls','pwd','df','du','ps','top','htop','free','uptime','grep','tail','head','wc','ping','curl -s','wget -q','git status','git log','pm2 status','pm2 list','pm2 logs','nginx -t','systemctl status'],
+};
+
+function checkVPSCommand(cmd, isAutonomous) {
+  if (!cmd) return { allowed: false, reason: 'Commande vide' };
+  const c = cmd.toLowerCase().trim();
+  if (VPS_RESTRICTIONS.ALWAYS_ALLOWED.some(a => c.startsWith(a))) return { allowed: true, readOnly: true };
+  if (VPS_RESTRICTIONS.BLOCKED_AUTONOMOUS.some(b => c.includes(b))) return { allowed: false, reason: 'Action VPS bloquée: ' + cmd.slice(0,50), severity: 'CRITICAL' };
+  const needsConfirm = VPS_RESTRICTIONS.REQUIRE_CONFIRMATION.some(r => c.includes(r));
+  if (needsConfirm && isAutonomous) return { allowed: false, reason: 'Confirmation requise: ' + cmd.slice(0,50), severity: 'HIGH', needsConfirm: true };
+  return { allowed: true };
+}
+
 module.exports = {
+  checkVPSCommand, VPS_RESTRICTIONS,
   checkPermission, checkCommand, classifyRoute, detectStopKeyword,
   killSwitch, isKillSwitchActive, resetKillSwitch,
   grantConsent, revokeConsent, revokeAllConsents, hasConsent,
